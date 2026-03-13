@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campo de Batalla — Simulación</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header id="cabecera">
+            <h1>⚔ Campo de Batalla</h1>
+            <p class="subtitulo">Simulación autónoma de facciones</p>
+        </header>
+
+        <div id="panel-info">
+            <div class="stat stat-buenos">
+                <span class="stat-icono">Ö</span>
+                <span class="stat-label">Pacíficos</span>
+                <span id="cont-buenos" class="stat-valor">0</span>
+            </div>
+            <div class="stat stat-malos">
+                <span class="stat-icono">Ü</span>
+                <span class="stat-label">Agresivos</span>
+                <span id="cont-malos" class="stat-valor">0</span>
+            </div>
+            <div class="stat stat-turno">
+                <span class="stat-icono">↻</span>
+                <span class="stat-label">Turno</span>
+                <span id="cont-turno" class="stat-valor">0</span>
+            </div>
+        </div>
+
+        <canvas id="tablero"></canvas>
+
+        <div id="controles">
+            <button id="btn-inicio" class="btn btn-primario">▶ Iniciar</button>
+            <button id="btn-pausa" class="btn" disabled>⏸ Pausar</button>
+            <button id="btn-reiniciar" class="btn">⟳ Reiniciar</button>
+            <div class="control-velocidad">
+                <label for="velocidad">Velocidad:</label>
+                <input type="range" id="velocidad" min="20" max="500" value="120" step="10">
+                <span id="vel-valor">120ms</span>
+            </div>
+        </div>
+
+        <div id="mensaje-final" class="oculto"></div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
