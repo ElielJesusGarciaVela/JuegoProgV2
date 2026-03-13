@@ -3,48 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campo de Batalla — Simulación</title>
+    <title>⚔️ Campo de Batalla</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app">
-        <header id="cabecera">
-            <h1>⚔ Campo de Batalla</h1>
-            <p class="subtitulo">Simulación autónoma de facciones</p>
-        </header>
 
-        <div id="panel-info">
-            <div class="stat stat-buenos">
-                <span class="stat-icono">Ö</span>
-                <span class="stat-label">Pacíficos</span>
-                <span id="cont-buenos" class="stat-valor">0</span>
-            </div>
-            <div class="stat stat-malos">
-                <span class="stat-icono">Ü</span>
-                <span class="stat-label">Agresivos</span>
-                <span id="cont-malos" class="stat-valor">0</span>
-            </div>
-            <div class="stat stat-turno">
-                <span class="stat-icono">↻</span>
-                <span class="stat-label">Turno</span>
-                <span id="cont-turno" class="stat-valor">0</span>
-            </div>
+    <!-- ════════════════════════════════════════════════════ -->
+    <!-- PANTALLA 1: Título inicial                          -->
+    <!-- ════════════════════════════════════════════════════ -->
+    <div id="pantalla-titulo" class="pantalla activa">
+        <div class="titulo-contenido">
+            <div class="titulo-icono">⚔️</div>
+            <h1 class="titulo-principal">Campo de Batalla</h1>
+            <p class="titulo-subtitulo">Aliados vs Enemigos</p>
         </div>
+        <p class="titulo-click">Haz click para iniciar</p>
+    </div>
 
-        <canvas id="tablero"></canvas>
+    <!-- ════════════════════════════════════════════════════ -->
+    <!-- PANTALLA 2: Selección de modo                       -->
+    <!-- ════════════════════════════════════════════════════ -->
+    <div id="pantalla-modos" class="pantalla">
+        <div class="modos-contenido">
+            <h2 class="modos-titulo">Selecciona modo de juego</h2>
 
-        <div id="controles">
-            <button id="btn-inicio" class="btn btn-primario">▶ Iniciar</button>
-            <button id="btn-pausa" class="btn" disabled>⏸ Pausar</button>
-            <button id="btn-reiniciar" class="btn">⟳ Reiniciar</button>
-            <div class="control-velocidad">
-                <label for="velocidad">Velocidad:</label>
-                <input type="range" id="velocidad" min="20" max="500" value="120" step="10">
-                <span id="vel-valor">120ms</span>
+            <div class="modos-selector">
+                <button id="btn-modo-prev" class="flecha-modo" aria-label="Modo anterior">‹</button>
+                <div class="modo-actual">
+                    <span id="modo-nombre" class="modo-nombre"></span>
+                    <p id="modo-descripcion" class="modo-descripcion"></p>
+                </div>
+                <button id="btn-modo-next" class="flecha-modo" aria-label="Modo siguiente">›</button>
             </div>
-        </div>
 
-        <div id="mensaje-final" class="oculto"></div>
+            <div class="modos-indicadores" id="modos-indicadores"></div>
+
+            <button id="btn-jugar" class="btn-jugar">Jugar</button>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════ -->
+    <!-- PANTALLA 3: Juego principal                         -->
+    <!-- ════════════════════════════════════════════════════ -->
+    <div id="pantalla-juego" class="pantalla">
+        <div id="app">
+            <header id="cabecera">
+                <h1>⚔️ Campo de Batalla</h1>
+                <p class="subtitulo">Aliados vs Enemigos — simulación de combate por turnos</p>
+            </header>
+
+            <div id="panel-info">
+                <div class="contador aliados">
+                    <span class="etiqueta">🟡 Aliados</span>
+                    <span id="cuenta-aliados" class="valor">0</span>
+                </div>
+                <div class="contador turno-info">
+                    <span class="etiqueta">Turno</span>
+                    <span id="cuenta-turno" class="valor">0</span>
+                </div>
+                <div class="contador enemigos">
+                    <span class="etiqueta">🔴 Enemigos</span>
+                    <span id="cuenta-enemigos" class="valor">0</span>
+                </div>
+            </div>
+
+            <canvas id="tablero"></canvas>
+
+            <div id="controles">
+                <button id="btn-iniciar">▶ Iniciar</button>
+                <button id="btn-pausar" disabled>⏸ Pausar</button>
+                <button id="btn-reiniciar">🔄 Reiniciar</button>
+                <button id="btn-menu">🏠 Menú</button>
+                <label class="control-velocidad">
+                    Velocidad:
+                    <input type="range" id="rango-velocidad" min="20" max="500" value="100" step="10">
+                    <span id="texto-velocidad">100ms</span>
+                </label>
+            </div>
+
+            <div id="mensaje-final" class="oculto"></div>
+        </div>
     </div>
 
     <script src="main.js"></script>

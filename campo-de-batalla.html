@@ -3,13 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚔️ Campo de Batalla</title>
+<title>Campo de Batalla</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;600;800&display=swap');
-:root{--fondo:#0a0a0f;--fondo-panel:#12121a;--borde:#1e1e2e;--texto:#c8c8d4;--texto-claro:#f0f0f5;--aliado:#f5c842;--enemigo:#e84545;--obstaculo:#3a3a52;--acento:#6c63ff;--radio:10px;--sombra:0 4px 24px rgba(0,0,0,.5)}
+:root{--fondo:#0a0a0f;--fondo-panel:#12121a;--borde:#1e1e2e;--texto:#c8c8d4;--texto-claro:#f0f0f5;--aliado:#f5c842;--enemigo:#e84545;--acento:#6c63ff;--acento-hover:#8b83ff;--exito:#42f5a0;--derrota:#e84545;--radio:10px;--sombra:0 4px 24px rgba(0,0,0,.5)}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Outfit',sans-serif;background:var(--fondo);color:var(--texto);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:1rem;background-image:radial-gradient(ellipse at 20% 50%,rgba(108,99,255,.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 30%,rgba(245,200,66,.04) 0%,transparent 50%)}
-#app{display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:700px;width:100%}
+body{font-family:'Outfit',sans-serif;background:var(--fondo);color:var(--texto);min-height:100vh;overflow:hidden;background-image:radial-gradient(ellipse at 20% 50%,rgba(108,99,255,.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 30%,rgba(245,200,66,.04) 0%,transparent 50%)}
+.pantalla{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s ease;z-index:1}
+.pantalla.activa{opacity:1;visibility:visible;z-index:10}
+#pantalla-titulo{cursor:pointer;user-select:none;padding:2rem}
+.titulo-contenido{text-align:center;animation:fadeInUp 1.2s ease-out both}
+.titulo-icono{font-size:4rem;margin-bottom:.5rem;animation:flotar 3s ease-in-out infinite}
+.titulo-principal{font-weight:800;font-size:clamp(2.5rem,7vw,4.5rem);color:var(--texto-claro);letter-spacing:-.03em;line-height:1.1;text-shadow:0 0 40px rgba(108,99,255,.3)}
+.titulo-subtitulo{font-size:clamp(.9rem,2.5vw,1.15rem);color:#555;margin-top:.6rem;letter-spacing:.15em;text-transform:uppercase}
+.titulo-click{position:absolute;bottom:12vh;left:0;right:0;text-align:center;font-size:clamp(.85rem,2vw,1rem);color:#555;letter-spacing:.08em;animation:parpadeo 2.5s ease-in-out infinite,fadeIn 2s .8s ease-out both}
+#pantalla-modos{padding:2rem}
+.modos-contenido{display:flex;flex-direction:column;align-items:center;gap:2rem;max-width:500px;width:100%}
+.modos-titulo{font-weight:800;font-size:clamp(1.3rem,4vw,1.8rem);color:var(--texto-claro);text-align:center;animation:fadeInUp .5s ease-out both}
+.modos-selector{display:flex;align-items:center;gap:1rem;width:100%;animation:fadeInUp .5s .1s ease-out both}
+.flecha-modo{flex-shrink:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border:1px solid var(--borde);border-radius:50%;background:var(--fondo-panel);color:var(--texto-claro);font-size:1.6rem;font-weight:300;cursor:pointer;transition:all .25s ease;line-height:1;padding:0;font-family:'Outfit',sans-serif}
+.flecha-modo:hover{background:var(--acento);border-color:var(--acento);transform:scale(1.1);box-shadow:0 0 20px rgba(108,99,255,.3)}
+.flecha-modo:active{transform:scale(.95)}
+.modo-actual{flex:1;text-align:center;min-height:90px;display:flex;flex-direction:column;justify-content:center;background:var(--fondo-panel);border:1px solid var(--borde);border-radius:var(--radio);padding:1rem 1.2rem;transition:border-color .3s}
+.modo-actual:hover{border-color:#2e2e44}
+.modo-nombre{font-weight:700;font-size:clamp(1.1rem,3vw,1.4rem);color:var(--acento);display:block;margin-bottom:.3rem}
+.modo-descripcion{font-size:clamp(.75rem,2vw,.85rem);color:#666;line-height:1.4}
+.modos-indicadores{display:flex;gap:.5rem;justify-content:center;animation:fadeInUp .5s .15s ease-out both}
+.indicador-dot{width:8px;height:8px;border-radius:50%;background:var(--borde);transition:all .3s;cursor:pointer}
+.indicador-dot.activo{background:var(--acento);box-shadow:0 0 8px rgba(108,99,255,.5);transform:scale(1.25)}
+.btn-jugar{font-family:'Outfit',sans-serif;font-weight:700;font-size:1.1rem;padding:.8rem 3rem;border:none;border-radius:var(--radio);background:var(--acento);color:#fff;cursor:pointer;transition:all .3s;letter-spacing:.04em;animation:fadeInUp .5s .25s ease-out both}
+.btn-jugar:hover{background:var(--acento-hover);transform:translateY(-2px);box-shadow:0 8px 30px rgba(108,99,255,.35)}
+.btn-jugar:active{transform:translateY(0)}
+#pantalla-juego{overflow-y:auto;padding:1rem}
+#app{display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:700px;width:100%;animation:fadeInUp .6s ease-out both}
 #cabecera{text-align:center}
 #cabecera h1{font-weight:800;font-size:1.8rem;color:var(--texto-claro);letter-spacing:-.02em}
 .subtitulo{font-size:.85rem;color:#666;margin-top:.2rem}
@@ -27,33 +53,74 @@ button:disabled{opacity:.35;cursor:not-allowed}
 #rango-velocidad{width:90px;accent-color:var(--acento)}
 #texto-velocidad{font-family:'JetBrains Mono',monospace;font-size:.75rem;min-width:3.5em}
 #mensaje-final{font-weight:800;font-size:1.4rem;padding:.8rem 1.6rem;border-radius:var(--radio);text-align:center;animation:aparecer .4s ease-out}
-#mensaje-final.victoria{color:#42f5a0;background:rgba(66,245,160,.08);border:1px solid rgba(66,245,160,.25)}
-#mensaje-final.derrota{color:#e84545;background:rgba(232,69,69,.08);border:1px solid rgba(232,69,69,.25)}
+#mensaje-final.victoria{color:var(--exito);background:rgba(66,245,160,.08);border:1px solid rgba(66,245,160,.25)}
+#mensaje-final.derrota{color:var(--derrota);background:rgba(232,69,69,.08);border:1px solid rgba(232,69,69,.25)}
 .oculto{display:none!important}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes aparecer{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
-@media(max-width:500px){#cabecera h1{font-size:1.3rem}.contador .valor{font-size:1.2rem}button{padding:.45rem .8rem;font-size:.78rem}}
+@keyframes parpadeo{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes flotar{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media(max-width:500px){#cabecera h1{font-size:1.3rem}.contador .valor{font-size:1.2rem}button{padding:.45rem .8rem;font-size:.78rem}.flecha-modo{width:40px;height:40px;font-size:1.3rem}.modo-actual{padding:.8rem;min-height:75px}.btn-jugar{padding:.7rem 2rem;font-size:1rem}.titulo-click{bottom:8vh}}
 </style>
 </head>
 <body>
-<div id="app">
-  <header id="cabecera"><h1>⚔️ Campo de Batalla</h1><p class="subtitulo">Aliados vs Enemigos — simulación de combate por turnos</p></header>
-  <div id="panel-info">
-    <div class="contador aliados"><span class="etiqueta">🟡 Aliados</span><span id="cuenta-aliados" class="valor">0</span></div>
-    <div class="contador turno-info"><span class="etiqueta">Turno</span><span id="cuenta-turno" class="valor">0</span></div>
-    <div class="contador enemigos"><span class="etiqueta">🔴 Enemigos</span><span id="cuenta-enemigos" class="valor">0</span></div>
+<div id="pantalla-titulo" class="pantalla activa">
+  <div class="titulo-contenido"><div class="titulo-icono">⚔️</div><h1 class="titulo-principal">Campo de Batalla</h1><p class="titulo-subtitulo">Aliados vs Enemigos</p></div>
+  <p class="titulo-click">Haz click para iniciar</p>
+</div>
+<div id="pantalla-modos" class="pantalla">
+  <div class="modos-contenido">
+    <h2 class="modos-titulo">Selecciona modo de juego</h2>
+    <div class="modos-selector">
+      <button id="btn-modo-prev" class="flecha-modo" aria-label="Modo anterior">‹</button>
+      <div class="modo-actual"><span id="modo-nombre" class="modo-nombre"></span><p id="modo-descripcion" class="modo-descripcion"></p></div>
+      <button id="btn-modo-next" class="flecha-modo" aria-label="Modo siguiente">›</button>
+    </div>
+    <div class="modos-indicadores" id="modos-indicadores"></div>
+    <button id="btn-jugar" class="btn-jugar">Jugar</button>
   </div>
-  <canvas id="tablero"></canvas>
-  <div id="controles">
-    <button id="btn-iniciar">▶ Iniciar</button>
-    <button id="btn-pausar" disabled>⏸ Pausar</button>
-    <button id="btn-reiniciar">🔄 Reiniciar</button>
-    <label class="control-velocidad">Velocidad:<input type="range" id="rango-velocidad" min="20" max="500" value="100" step="10"><span id="texto-velocidad">100ms</span></label>
+</div>
+<div id="pantalla-juego" class="pantalla">
+  <div id="app">
+    <header id="cabecera"><h1>⚔️ Campo de Batalla</h1><p class="subtitulo">Aliados vs Enemigos — simulación de combate por turnos</p></header>
+    <div id="panel-info">
+      <div class="contador aliados"><span class="etiqueta">🟡 Aliados</span><span id="cuenta-aliados" class="valor">0</span></div>
+      <div class="contador turno-info"><span class="etiqueta">Turno</span><span id="cuenta-turno" class="valor">0</span></div>
+      <div class="contador enemigos"><span class="etiqueta">🔴 Enemigos</span><span id="cuenta-enemigos" class="valor">0</span></div>
+    </div>
+    <canvas id="tablero"></canvas>
+    <div id="controles">
+      <button id="btn-iniciar">▶ Iniciar</button><button id="btn-pausar" disabled>⏸ Pausar</button><button id="btn-reiniciar">🔄 Reiniciar</button><button id="btn-menu">🏠 Menú</button>
+      <label class="control-velocidad">Velocidad:<input type="range" id="rango-velocidad" min="20" max="500" value="100" step="10"><span id="texto-velocidad">100ms</span></label>
+    </div>
+    <div id="mensaje-final" class="oculto"></div>
   </div>
-  <div id="mensaje-final" class="oculto"></div>
 </div>
 <script>
 "use strict";
+const Menu=(()=>{
+  const MODOS=[
+    {id:"clasico",nombre:"Clásico",descripcion:"Dos bandos luchan en una cuadrícula 30×30. Los aliados huyen, los enemigos persiguen. Último en pie gana.",config:{}},
+  ];
+  let idx=0;
+  const pT=document.getElementById("pantalla-titulo"),pM=document.getElementById("pantalla-modos"),pJ=document.getElementById("pantalla-juego");
+  const eN=document.getElementById("modo-nombre"),eD=document.getElementById("modo-descripcion"),eI=document.getElementById("modos-indicadores");
+  const bP=document.getElementById("btn-modo-prev"),bN=document.getElementById("btn-modo-next"),bJ=document.getElementById("btn-jugar"),bV=document.getElementById("btn-menu");
+  function show(p){document.querySelectorAll(".pantalla").forEach(el=>el.classList.remove("activa"));p.classList.add("activa")}
+  function render(){const m=MODOS[idx];eN.textContent=m.nombre;eD.textContent=m.descripcion;eI.querySelectorAll(".indicador-dot").forEach((d,i)=>d.classList.toggle("activo",i===idx))}
+  function dots(){eI.innerHTML="";MODOS.forEach((_,i)=>{const d=document.createElement("span");d.className="indicador-dot"+(i===0?" activo":"");d.addEventListener("click",()=>{idx=i;render()});eI.appendChild(d)})}
+  function prev(){idx=(idx-1+MODOS.length)%MODOS.length;render()}
+  function next(){idx=(idx+1)%MODOS.length;render()}
+  function confirm(){show(pJ);startGame(MODOS[idx])}
+  function back(){detenerJuego();show(pM)}
+  function init(){dots();render();pT.addEventListener("click",()=>show(pM));bP.addEventListener("click",prev);bN.addEventListener("click",next);bJ.addEventListener("click",confirm);bV.addEventListener("click",back);
+    document.addEventListener("keydown",e=>{if(!pM.classList.contains("activa"))return;if(e.key==="ArrowLeft")prev();if(e.key==="ArrowRight")next();if(e.key==="Enter")confirm()})}
+  return{init};
+})();
+
 const CONFIG={ANCHO:30,ALTO:30,PROB_VACIO:.85,PROB_PERSONAJE:.05,RADIO_DETECCION:4,TAMANO_CELDA:20};
+const CONFIG_BASE={...CONFIG};
 const TIPO={VACIO:0,ALIADO:1,ENEMIGO:2,OBS_X:3,OBS_O:4,OBS_Z:5};
 let tablero=[],movidoEsteTurno=[],turno=0,intervaloId=null,velocidad=100,juegoActivo=false;
 const canvas=document.getElementById("tablero"),ctx=canvas.getContext("2d");
@@ -62,99 +129,38 @@ const btnI=document.getElementById("btn-iniciar"),btnP=document.getElementById("
 const rangoV=document.getElementById("rango-velocidad"),textoV=document.getElementById("texto-velocidad"),msgFin=document.getElementById("mensaje-final");
 const DIRS=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
 
-function crearTablero(){tablero=[];for(let i=0;i<CONFIG.ALTO;i++){const f=[];for(let j=0;j<CONFIG.ANCHO;j++)f.push(genEntidad());tablero.push(f)}}
-function genEntidad(){const r=Math.random();if(r<CONFIG.PROB_VACIO)return TIPO.VACIO;if(r<CONFIG.PROB_VACIO+CONFIG.PROB_PERSONAJE)return Math.random()<.5?TIPO.ALIADO:TIPO.ENEMIGO;return[TIPO.OBS_X,TIPO.OBS_O,TIPO.OBS_Z][Math.floor(Math.random()*3)]}
-function reiniciarMovidos(){movidoEsteTurno=[];for(let i=0;i<CONFIG.ALTO;i++)movidoEsteTurno.push(new Array(CONFIG.ANCHO).fill(false))}
+function startGame(modo){Object.assign(CONFIG,CONFIG_BASE,modo.config||{});turno=0;velocidad=parseInt(rangoV.value);ocultarMensaje();crearTablero();ajustarCanvas();dibujar();actualizarContadores();btnI.disabled=false;btnP.disabled=true;juegoActivo=false}
+function crearTablero(){tablero=[];for(let i=0;i<CONFIG.ALTO;i++){const f=[];for(let j=0;j<CONFIG.ANCHO;j++)f.push(genEnt());tablero.push(f)}}
+function genEnt(){const r=Math.random();if(r<CONFIG.PROB_VACIO)return TIPO.VACIO;if(r<CONFIG.PROB_VACIO+CONFIG.PROB_PERSONAJE)return Math.random()<.5?TIPO.ALIADO:TIPO.ENEMIGO;return[TIPO.OBS_X,TIPO.OBS_O,TIPO.OBS_Z][Math.floor(Math.random()*3)]}
+function reiniciarMov(){movidoEsteTurno=[];for(let i=0;i<CONFIG.ALTO;i++)movidoEsteTurno.push(new Array(CONFIG.ANCHO).fill(false))}
 function esPers(t){return t===TIPO.ALIADO||t===TIPO.ENEMIGO}
 function esObs(t){return t===TIPO.OBS_X||t===TIPO.OBS_O||t===TIPO.OBS_Z}
 function dentro(i,j){return i>=0&&i<CONFIG.ALTO&&j>=0&&j<CONFIG.ANCHO}
 function mezclar(a){for(let k=a.length-1;k>0;k--){const r=Math.floor(Math.random()*(k+1));[a[k],a[r]]=[a[r],a[k]]}}
 function contar(t){let n=0;for(let i=0;i<CONFIG.ALTO;i++)for(let j=0;j<CONFIG.ANCHO;j++)if(tablero[i][j]===t)n++;return n}
 
-function ejecutarTurno(){
-  turno++;reiniciarMovidos();resolverCombates();
-  const pos=[];for(let i=0;i<CONFIG.ALTO;i++)for(let j=0;j<CONFIG.ANCHO;j++)if(esPers(tablero[i][j]))pos.push({i,j});
-  mezclar(pos);
-  for(const p of pos){const t=tablero[p.i][p.j];if(!esPers(t)||movidoEsteTurno[p.i][p.j])continue;const en=buscarEnemigo(p.i,p.j,t,CONFIG.RADIO_DETECCION);if(en)moverHacia(p.i,p.j,t,en);else moverAzar(p.i,p.j)}
-  dibujar();actualizar();comprobarFin();
-}
-
-function resolverCombates(){
-  const peleado=[];for(let i=0;i<CONFIG.ALTO;i++)peleado.push(new Array(CONFIG.ANCHO).fill(false));
-  for(let i=0;i<CONFIG.ALTO;i++)for(let j=0;j<CONFIG.ANCHO;j++){
-    const t=tablero[i][j];if(!esPers(t)||peleado[i][j])continue;
-    const en=buscarEnemigo(i,j,t,1);
-    if(en&&!peleado[en.i][en.j]){if(Math.random()<.5)tablero[i][j]=TIPO.VACIO;else tablero[en.i][en.j]=TIPO.VACIO;peleado[i][j]=true;peleado[en.i][en.j]=true}
-  }
-}
-
-function buscarEnemigo(fi,fj,tipo,radio){
-  let best=Infinity,pos=null;
-  for(let di=-radio;di<=radio;di++)for(let dj=-radio;dj<=radio;dj++){
-    if(!di&&!dj)continue;const ni=fi+di,nj=fj+dj;
-    if(!dentro(ni,nj))continue;const v=tablero[ni][nj];
-    if(esPers(v)&&v!==tipo){const d=Math.abs(di)+Math.abs(dj);if(d<best){best=d;pos={i:ni,j:nj}}}
-  }
-  return pos;
-}
-
-function moverAzar(fi,fj){
-  const d=[...DIRS];mezclar(d);
-  for(const[di,dj]of d){const ni=fi+di,nj=fj+dj;
-    if(dentro(ni,nj)&&tablero[ni][nj]===TIPO.VACIO){tablero[ni][nj]=tablero[fi][fj];tablero[fi][fj]=TIPO.VACIO;movidoEsteTurno[ni][nj]=true;return}}
-}
-
-function moverHacia(fi,fj,tipo,en){
-  const di=Math.sign(en.i-fi),dj=Math.sign(en.j-fj);
-  let pi,pj;
-  if(tipo===TIPO.ALIADO){pi=-di;pj=-dj}else{pi=di;pj=dj}
-  const ni=fi+pi,nj=fj+pj;
-  if(dentro(ni,nj)&&tablero[ni][nj]===TIPO.VACIO){tablero[ni][nj]=tablero[fi][fj];tablero[fi][fj]=TIPO.VACIO;movidoEsteTurno[ni][nj]=true}
-  else moverAzar(fi,fj);
-}
+function ejecutarTurno(){turno++;reiniciarMov();resolverCombates();const pos=[];for(let i=0;i<CONFIG.ALTO;i++)for(let j=0;j<CONFIG.ANCHO;j++)if(esPers(tablero[i][j]))pos.push({i,j});mezclar(pos);for(const p of pos){const t=tablero[p.i][p.j];if(!esPers(t)||movidoEsteTurno[p.i][p.j])continue;const en=buscarEn(p.i,p.j,t,CONFIG.RADIO_DETECCION);if(en)moverHacia(p.i,p.j,t,en);else moverAzar(p.i,p.j)}dibujar();actualizarContadores();comprobarFin()}
+function resolverCombates(){const pel=[];for(let i=0;i<CONFIG.ALTO;i++)pel.push(new Array(CONFIG.ANCHO).fill(false));for(let i=0;i<CONFIG.ALTO;i++)for(let j=0;j<CONFIG.ANCHO;j++){const t=tablero[i][j];if(!esPers(t)||pel[i][j])continue;const en=buscarEn(i,j,t,1);if(en&&!pel[en.i][en.j]){if(Math.random()<.5)tablero[i][j]=TIPO.VACIO;else tablero[en.i][en.j]=TIPO.VACIO;pel[i][j]=true;pel[en.i][en.j]=true}}}
+function buscarEn(fi,fj,tipo,radio){let best=Infinity,pos=null;for(let di=-radio;di<=radio;di++)for(let dj=-radio;dj<=radio;dj++){if(!di&&!dj)continue;const ni=fi+di,nj=fj+dj;if(!dentro(ni,nj))continue;const v=tablero[ni][nj];if(esPers(v)&&v!==tipo){const d=Math.abs(di)+Math.abs(dj);if(d<best){best=d;pos={i:ni,j:nj}}}}return pos}
+function moverAzar(fi,fj){const d=[...DIRS];mezclar(d);for(const[di,dj]of d){const ni=fi+di,nj=fj+dj;if(dentro(ni,nj)&&tablero[ni][nj]===TIPO.VACIO){tablero[ni][nj]=tablero[fi][fj];tablero[fi][fj]=TIPO.VACIO;movidoEsteTurno[ni][nj]=true;return}}}
+function moverHacia(fi,fj,tipo,en){const di=Math.sign(en.i-fi),dj=Math.sign(en.j-fj);let pi,pj;if(tipo===TIPO.ALIADO){pi=-di;pj=-dj}else{pi=di;pj=dj}const ni=fi+pi,nj=fj+pj;if(dentro(ni,nj)&&tablero[ni][nj]===TIPO.VACIO){tablero[ni][nj]=tablero[fi][fj];tablero[fi][fj]=TIPO.VACIO;movidoEsteTurno[ni][nj]=true}else moverAzar(fi,fj)}
 
 function ajustarCanvas(){const r=canvas.getBoundingClientRect();const s=Math.floor(r.width);canvas.width=s;canvas.height=s;CONFIG.TAMANO_CELDA=s/CONFIG.ANCHO}
+function dibujar(){const t=CONFIG.TAMANO_CELDA;ctx.clearRect(0,0,canvas.width,canvas.height);for(let i=0;i<CONFIG.ALTO;i++)for(let j=0;j<CONFIG.ANCHO;j++){const x=j*t,y=i*t;ctx.fillStyle=(i+j)%2===0?"#13131d":"#111119";ctx.fillRect(x,y,t,t);const tipo=tablero[i][j],c=t/2;if(tipo===TIPO.ALIADO){const g=ctx.createRadialGradient(x+c,y+c,t*.1,x+c,y+c,t*.6);g.addColorStop(0,"#ffe06688");g.addColorStop(1,"transparent");ctx.fillStyle=g;ctx.fillRect(x,y,t,t);ctx.fillStyle="#f5c842";ctx.font=`bold ${t*.65}px 'JetBrains Mono',monospace`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Ö",x+c,y+c+1)}else if(tipo===TIPO.ENEMIGO){const g=ctx.createRadialGradient(x+c,y+c,t*.1,x+c,y+c,t*.6);g.addColorStop(0,"#ff555588");g.addColorStop(1,"transparent");ctx.fillStyle=g;ctx.fillRect(x,y,t,t);ctx.fillStyle="#e84545";ctx.font=`bold ${t*.65}px 'JetBrains Mono',monospace`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Ü",x+c,y+c+1)}else if(esObs(tipo)){ctx.fillStyle="#2a2a3a";ctx.font=`${t*.5}px 'JetBrains Mono',monospace`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(tipo===TIPO.OBS_X?"✕":tipo===TIPO.OBS_O?"◯":"▣",x+c,y+c+1)}}}
 
-function dibujar(){
-  const t=CONFIG.TAMANO_CELDA;ctx.clearRect(0,0,canvas.width,canvas.height);
-  for(let i=0;i<CONFIG.ALTO;i++)for(let j=0;j<CONFIG.ANCHO;j++){
-    const x=j*t,y=i*t;
-    ctx.fillStyle=(i+j)%2===0?"#13131d":"#111119";ctx.fillRect(x,y,t,t);
-    const tipo=tablero[i][j],c=t/2;
-    if(tipo===TIPO.ALIADO){
-      const g=ctx.createRadialGradient(x+c,y+c,t*.1,x+c,y+c,t*.6);g.addColorStop(0,"#ffe06688");g.addColorStop(1,"transparent");ctx.fillStyle=g;ctx.fillRect(x,y,t,t);
-      ctx.fillStyle="#f5c842";ctx.font=`bold ${t*.65}px 'JetBrains Mono',monospace`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Ö",x+c,y+c+1)
-    }else if(tipo===TIPO.ENEMIGO){
-      const g=ctx.createRadialGradient(x+c,y+c,t*.1,x+c,y+c,t*.6);g.addColorStop(0,"#ff555588");g.addColorStop(1,"transparent");ctx.fillStyle=g;ctx.fillRect(x,y,t,t);
-      ctx.fillStyle="#e84545";ctx.font=`bold ${t*.65}px 'JetBrains Mono',monospace`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Ü",x+c,y+c+1)
-    }else if(esObs(tipo)){
-      ctx.fillStyle="#2a2a3a";ctx.font=`${t*.5}px 'JetBrains Mono',monospace`;ctx.textAlign="center";ctx.textBaseline="middle";
-      ctx.fillText(tipo===TIPO.OBS_X?"✕":tipo===TIPO.OBS_O?"◯":"▣",x+c,y+c+1)
-    }
-  }
-}
+function actualizarContadores(){elA.textContent=contar(TIPO.ALIADO);elE.textContent=contar(TIPO.ENEMIGO);elT.textContent=turno}
+function comprobarFin(){const a=contar(TIPO.ALIADO),e=contar(TIPO.ENEMIGO);if(a===0&&e===0){detenerJuego();mostrarMensaje("🤝 ¡Empate!","derrota")}else if(a===0){detenerJuego();mostrarMensaje("💀 ¡Enemigos ganan!","derrota")}else if(e===0){detenerJuego();mostrarMensaje("🏆 ¡Aliados ganan!","victoria")}}
+function mostrarMensaje(t,c){msgFin.textContent=t;msgFin.className=c}
+function ocultarMensaje(){msgFin.className="oculto"}
+function iniciarJuego(){if(juegoActivo)return;juegoActivo=true;btnI.disabled=true;btnP.disabled=false;intervaloId=setInterval(ejecutarTurno,velocidad)}
+function pausarJuego(){if(!juegoActivo)return;juegoActivo=false;clearInterval(intervaloId);intervaloId=null;btnI.disabled=false;btnP.disabled=true}
+function detenerJuego(){juegoActivo=false;clearInterval(intervaloId);intervaloId=null;btnI.disabled=true;btnP.disabled=true}
+function reiniciarJuego(){detenerJuego();turno=0;ocultarMensaje();crearTablero();ajustarCanvas();dibujar();actualizarContadores();btnI.disabled=false}
 
-function actualizar(){elA.textContent=contar(TIPO.ALIADO);elE.textContent=contar(TIPO.ENEMIGO);elT.textContent=turno}
-
-function comprobarFin(){
-  const a=contar(TIPO.ALIADO),e=contar(TIPO.ENEMIGO);
-  if(a===0&&e===0){detener();mostrarMsg("🤝 ¡Empate! Todos han caído.","derrota")}
-  else if(a===0){detener();mostrarMsg("💀 ¡Los enemigos dominan el campo!","derrota")}
-  else if(e===0){detener();mostrarMsg("🏆 ¡Los aliados han vencido!","victoria")}
-}
-
-function mostrarMsg(t,c){msgFin.textContent=t;msgFin.className=c}
-function ocultarMsg(){msgFin.className="oculto"}
-function iniciar(){if(juegoActivo)return;juegoActivo=true;btnI.disabled=true;btnP.disabled=false;intervaloId=setInterval(ejecutarTurno,velocidad)}
-function pausar(){if(!juegoActivo)return;juegoActivo=false;clearInterval(intervaloId);intervaloId=null;btnI.disabled=false;btnP.disabled=true}
-function detener(){juegoActivo=false;clearInterval(intervaloId);intervaloId=null;btnI.disabled=true;btnP.disabled=true}
-function reiniciar(){detener();turno=0;ocultarMsg();crearTablero();ajustarCanvas();dibujar();actualizar();btnI.disabled=false}
-
-btnI.addEventListener("click",iniciar);btnP.addEventListener("click",pausar);btnR.addEventListener("click",reiniciar);
+btnI.addEventListener("click",iniciarJuego);btnP.addEventListener("click",pausarJuego);btnR.addEventListener("click",reiniciarJuego);
 rangoV.addEventListener("input",()=>{velocidad=parseInt(rangoV.value);textoV.textContent=velocidad+"ms";if(juegoActivo){clearInterval(intervaloId);intervaloId=setInterval(ejecutarTurno,velocidad)}});
-window.addEventListener("resize",()=>{ajustarCanvas();dibujar()});
-
-crearTablero();ajustarCanvas();dibujar();actualizar();
+window.addEventListener("resize",()=>{if(document.getElementById("pantalla-juego").classList.contains("activa")){ajustarCanvas();dibujar()}});
+Menu.init();
 </script>
 </body>
 </html>
