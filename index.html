@@ -8,9 +8,7 @@
 </head>
 <body class="tema-default">
 
-    <!-- ═══════════════════════════════════════════════════════
-         PANTALLA 1: Título inicial
-         ═══════════════════════════════════════════════════════ -->
+    <!-- ═══════ PANTALLA 1: Título ═══════ -->
     <div id="pantalla-titulo" class="pantalla activa">
         <div class="titulo-contenido">
             <div class="titulo-icono">🎮</div>
@@ -19,47 +17,31 @@
         <p class="titulo-click">Haz click para iniciar</p>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════
-         PANTALLA 2: Selección de modo
-         ═══════════════════════════════════════════════════════ -->
+    <!-- ═══════ PANTALLA 2: Selección de modo ═══════ -->
     <div id="pantalla-modos" class="pantalla">
         <div class="modos-contenido">
             <h2 class="modos-titulo">Selecciona modo de juego</h2>
             <div class="modos-selector">
-                <button id="btn-modo-prev" class="flecha-modo" aria-label="Modo anterior">‹</button>
+                <button id="btn-modo-prev" class="flecha-modo">‹</button>
                 <div class="modo-actual">
                     <span id="modo-nombre" class="modo-nombre"></span>
                     <p id="modo-descripcion" class="modo-descripcion"></p>
                 </div>
-                <button id="btn-modo-next" class="flecha-modo" aria-label="Modo siguiente">›</button>
+                <button id="btn-modo-next" class="flecha-modo">›</button>
             </div>
             <div class="modos-indicadores" id="modos-indicadores"></div>
             <button id="btn-jugar" class="btn-jugar">Jugar</button>
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════
-         PANTALLA 3: Juego Clásico
-         ═══════════════════════════════════════════════════════ -->
+    <!-- ═══════ PANTALLA 3: Juego Clásico ═══════ -->
     <div id="pantalla-juego" class="pantalla">
         <div id="app">
-            <header id="cabecera">
-                <h1>⚔️ Campo de Batalla</h1>
-                <p class="subtitulo">Aliados vs Enemigos — simulación de combate por turnos</p>
-            </header>
+            <header id="cabecera"><h1>⚔️ Campo de Batalla</h1><p class="subtitulo">Aliados vs Enemigos</p></header>
             <div id="panel-info">
-                <div class="contador aliados">
-                    <span class="etiqueta">🟡 Aliados</span>
-                    <span id="cuenta-aliados" class="valor">0</span>
-                </div>
-                <div class="contador turno-info">
-                    <span class="etiqueta">Turno</span>
-                    <span id="cuenta-turno" class="valor">0</span>
-                </div>
-                <div class="contador enemigos">
-                    <span class="etiqueta">🔴 Enemigos</span>
-                    <span id="cuenta-enemigos" class="valor">0</span>
-                </div>
+                <div class="contador aliados"><span class="etiqueta">🟡 Aliados</span><span id="cuenta-aliados" class="valor">0</span></div>
+                <div class="contador turno-info"><span class="etiqueta">Turno</span><span id="cuenta-turno" class="valor">0</span></div>
+                <div class="contador enemigos"><span class="etiqueta">🔴 Enemigos</span><span id="cuenta-enemigos" class="valor">0</span></div>
             </div>
             <canvas id="tablero"></canvas>
             <div id="controles">
@@ -67,32 +49,23 @@
                 <button id="btn-pausar" disabled>⏸ Pausar</button>
                 <button id="btn-reiniciar">🔄 Reiniciar</button>
                 <button id="btn-menu">🏠 Menú</button>
-                <label class="control-velocidad">
-                    Velocidad:
-                    <input type="range" id="rango-velocidad" min="20" max="500" value="100" step="10">
-                    <span id="texto-velocidad">100ms</span>
-                </label>
+                <label class="control-velocidad">Velocidad:<input type="range" id="rango-velocidad" min="20" max="500" value="100" step="10"><span id="texto-velocidad">100ms</span></label>
             </div>
             <div id="mensaje-final" class="oculto"></div>
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════
-         PANTALLA 4: Selección de personajes (Lotus)
-         ═══════════════════════════════════════════════════════ -->
+    <!-- ═══════ PANTALLA 4: Selección de personajes (Lotus) ═══════ -->
     <div id="pantalla-seleccion" class="pantalla">
         <div class="seleccion-contenido">
             <h2 class="seleccion-titulo">Elige tu equipo</h2>
-            <p class="seleccion-sub">Selecciona hasta <strong>6</strong> guerreros</p>
-
+            <p class="seleccion-sub">Selecciona hasta <strong>3</strong> guerreros</p>
             <div class="equipo-actual">
                 <span class="equipo-label">Equipo:</span>
                 <div id="equipo-slots" class="equipo-slots"></div>
-                <span id="equipo-contador" class="equipo-contador">0 / 6</span>
+                <span id="equipo-contador" class="equipo-contador">0 / 3</span>
             </div>
-
             <div id="grid-personajes" class="grid-personajes"></div>
-
             <div class="seleccion-acciones">
                 <button id="btn-confirmar-equipo" class="btn-jugar" disabled>Confirmar equipo</button>
                 <button id="btn-volver-modos" class="btn-secundario">← Volver</button>
@@ -100,37 +73,41 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════
-         PANTALLA 5: Combate Lotus of the Damned
-         ═══════════════════════════════════════════════════════ -->
+    <!-- ═══════ PANTALLA 5: Combate por turnos ═══════ -->
     <div id="pantalla-combate" class="pantalla">
-        <div class="combate-layout">
-            <!-- Barra superior: info del jefe -->
-            <div class="jefe-panel">
-                <div class="jefe-info">
-                    <h2 class="jefe-nombre">🌸 Lotus Guardian</h2>
-                    <div class="jefe-barra-vida">
-                        <div id="jefe-vida-fill" class="jefe-vida-fill"></div>
-                        <span id="jefe-vida-texto" class="jefe-vida-texto"></span>
-                    </div>
+        <div class="batalla-escena" id="batalla-escena">
+            <!-- Fondo de batalla (via CSS background-image) -->
+
+            <!-- Barra de orden de turnos (esquina sup. derecha) -->
+            <div class="turno-barra" id="turno-barra">
+                <div class="turno-contador" id="turno-contador">Turno 0</div>
+                <div class="turno-lista" id="turno-lista"></div>
+            </div>
+
+            <!-- Zona enemigo (arriba derecha del campo) -->
+            <div class="zona-enemigo" id="zona-enemigo">
+                <div class="enemigo-placeholder">Enemigo (próximamente)</div>
+            </div>
+
+            <!-- Zona personaje activo (abajo izquierda del campo) -->
+            <div class="zona-aliado" id="zona-aliado">
+                <canvas id="sprite-canvas"></canvas>
+            </div>
+
+            <!-- Panel de acciones (abajo derecha) -->
+            <div class="panel-acciones" id="panel-acciones">
+                <div class="panel-acciones-info">
+                    <span class="pa-nombre" id="pa-nombre">—</span>
+                    <span class="pa-hp" id="pa-hp">HP: — / —</span>
                 </div>
-                <div id="jefe-efectos" class="jefe-efectos"></div>
+                <div class="panel-acciones-btns">
+                    <button id="btn-atacar" class="btn-accion">⚔️ Atacar</button>
+                    <button id="btn-defender" class="btn-accion">🛡️ Defender</button>
+                </div>
             </div>
 
-            <!-- Log de combate -->
-            <div id="combate-log" class="combate-log">
-                <p class="log-intro">El combate está a punto de comenzar...</p>
-            </div>
-
-            <!-- Equipo del jugador -->
-            <div id="equipo-combate" class="equipo-combate"></div>
-
-            <!-- Controles de combate -->
-            <div class="combate-controles">
-                <span id="turno-indicador" class="turno-indicador">Turno 0</span>
-                <button id="btn-atacar" class="btn-combate btn-atacar">⚔️ Atacar</button>
-                <button id="btn-combate-menu" class="btn-secundario">🏠 Menú</button>
-            </div>
+            <!-- Botón volver al menú -->
+            <button id="btn-combate-menu" class="btn-flotante-menu">🏠</button>
         </div>
     </div>
 
