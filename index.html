@@ -3,30 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚔️ Campo de Batalla</title>
+    <title>Game Bar</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="tema-default">
 
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- PANTALLA 1: Título inicial                          -->
-    <!-- ════════════════════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════════════════════════
+         PANTALLA 1: Título inicial
+         ═══════════════════════════════════════════════════════ -->
     <div id="pantalla-titulo" class="pantalla activa">
         <div class="titulo-contenido">
-            <div class="titulo-icono">⚔️</div>
-            <h1 class="titulo-principal">Campo de Batalla</h1>
-            <p class="titulo-subtitulo">Aliados vs Enemigos</p>
+            <div class="titulo-icono">🎮</div>
+            <h1 class="titulo-principal">Game Bar</h1>
         </div>
         <p class="titulo-click">Haz click para iniciar</p>
     </div>
 
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- PANTALLA 2: Selección de modo                       -->
-    <!-- ════════════════════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════════════════════════
+         PANTALLA 2: Selección de modo
+         ═══════════════════════════════════════════════════════ -->
     <div id="pantalla-modos" class="pantalla">
         <div class="modos-contenido">
             <h2 class="modos-titulo">Selecciona modo de juego</h2>
-
             <div class="modos-selector">
                 <button id="btn-modo-prev" class="flecha-modo" aria-label="Modo anterior">‹</button>
                 <div class="modo-actual">
@@ -35,23 +33,20 @@
                 </div>
                 <button id="btn-modo-next" class="flecha-modo" aria-label="Modo siguiente">›</button>
             </div>
-
             <div class="modos-indicadores" id="modos-indicadores"></div>
-
             <button id="btn-jugar" class="btn-jugar">Jugar</button>
         </div>
     </div>
 
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- PANTALLA 3: Juego principal                         -->
-    <!-- ════════════════════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════════════════════════
+         PANTALLA 3: Juego Clásico
+         ═══════════════════════════════════════════════════════ -->
     <div id="pantalla-juego" class="pantalla">
         <div id="app">
             <header id="cabecera">
                 <h1>⚔️ Campo de Batalla</h1>
                 <p class="subtitulo">Aliados vs Enemigos — simulación de combate por turnos</p>
             </header>
-
             <div id="panel-info">
                 <div class="contador aliados">
                     <span class="etiqueta">🟡 Aliados</span>
@@ -66,9 +61,7 @@
                     <span id="cuenta-enemigos" class="valor">0</span>
                 </div>
             </div>
-
             <canvas id="tablero"></canvas>
-
             <div id="controles">
                 <button id="btn-iniciar">▶ Iniciar</button>
                 <button id="btn-pausar" disabled>⏸ Pausar</button>
@@ -80,8 +73,64 @@
                     <span id="texto-velocidad">100ms</span>
                 </label>
             </div>
-
             <div id="mensaje-final" class="oculto"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PANTALLA 4: Selección de personajes (Lotus)
+         ═══════════════════════════════════════════════════════ -->
+    <div id="pantalla-seleccion" class="pantalla">
+        <div class="seleccion-contenido">
+            <h2 class="seleccion-titulo">Elige tu equipo</h2>
+            <p class="seleccion-sub">Selecciona hasta <strong>6</strong> guerreros</p>
+
+            <div class="equipo-actual">
+                <span class="equipo-label">Equipo:</span>
+                <div id="equipo-slots" class="equipo-slots"></div>
+                <span id="equipo-contador" class="equipo-contador">0 / 6</span>
+            </div>
+
+            <div id="grid-personajes" class="grid-personajes"></div>
+
+            <div class="seleccion-acciones">
+                <button id="btn-confirmar-equipo" class="btn-jugar" disabled>Confirmar equipo</button>
+                <button id="btn-volver-modos" class="btn-secundario">← Volver</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PANTALLA 5: Combate Lotus of the Damned
+         ═══════════════════════════════════════════════════════ -->
+    <div id="pantalla-combate" class="pantalla">
+        <div class="combate-layout">
+            <!-- Barra superior: info del jefe -->
+            <div class="jefe-panel">
+                <div class="jefe-info">
+                    <h2 class="jefe-nombre">🌸 Lotus Guardian</h2>
+                    <div class="jefe-barra-vida">
+                        <div id="jefe-vida-fill" class="jefe-vida-fill"></div>
+                        <span id="jefe-vida-texto" class="jefe-vida-texto"></span>
+                    </div>
+                </div>
+                <div id="jefe-efectos" class="jefe-efectos"></div>
+            </div>
+
+            <!-- Log de combate -->
+            <div id="combate-log" class="combate-log">
+                <p class="log-intro">El combate está a punto de comenzar...</p>
+            </div>
+
+            <!-- Equipo del jugador -->
+            <div id="equipo-combate" class="equipo-combate"></div>
+
+            <!-- Controles de combate -->
+            <div class="combate-controles">
+                <span id="turno-indicador" class="turno-indicador">Turno 0</span>
+                <button id="btn-atacar" class="btn-combate btn-atacar">⚔️ Atacar</button>
+                <button id="btn-combate-menu" class="btn-secundario">🏠 Menú</button>
+            </div>
         </div>
     </div>
 

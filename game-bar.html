@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Bar</title>
+<style>
+/* styles.css — Game Bar */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;600;800&family=Noto+Serif+JP:wght@400;700&display=swap');
+
+/* ══════════════════════════════════════════════════════════
+   TEMAS — Variables por modo de juego
+   ══════════════════════════════════════════════════════════ */
+
+/* Tema por defecto / Clásico */
+.tema-default {
+    --t-fondo: #0a0a0f;
+    --t-fondo-panel: #12121a;
+    --t-borde: #1e1e2e;
+    --t-texto: #c8c8d4;
+    --t-texto-claro: #f0f0f5;
+    --t-acento: #6c63ff;
+    --t-acento-hover: #8b83ff;
+    --t-acento-glow: rgba(108, 99, 255, 0.3);
+}
+
+/* Tema Lotus of the Damned */
+.tema-lotus {
+    --t-fondo: #1a2210;
+    --t-fondo-panel: #222e16;
+    --t-borde: #3a5224;
+    --t-texto: #c5d4a8;
+    --t-texto-claro: #ecefe1;
+    --t-acento: #aacc24;
+    --t-acento-hover: #c2e63a;
+    --t-acento-glow: rgba(170, 204, 36, 0.3);
+}
+
+/* ══════════════════════════════════════════════════════════
+   VARIABLES GLOBALES (derivadas del tema)
+   ══════════════════════════════════════════════════════════ */
+:root {
+    --aliado: #f5c842;
+    --enemigo: #e84545;
+    --exito: #42f5a0;
+    --derrota: #e84545;
+    --radio: 10px;
+    --sombra: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESET Y BASE
+   ══════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--t-fondo);
+    color: var(--t-texto);
+    min-height: 100vh;
+    overflow: hidden;
+    /* Transición suave al cambiar de tema */
+    transition: background-color 0.8s ease, color 0.6s ease;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SISTEMA DE PANTALLAS
+   ══════════════════════════════════════════════════════════ */
+.pantalla {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    z-index: 1;
+}
+.pantalla.activa { opacity: 1; visibility: visible; z-index: 10; }
+
+/* ══════════════════════════════════════════════════════════
+   PANTALLA 1 — TÍTULO
+   ══════════════════════════════════════════════════════════ */
+#pantalla-titulo { cursor: pointer; user-select: none; padding: 2rem; }
+
+.titulo-contenido { text-align: center; animation: fadeInUp 1.2s ease-out both; }
+.titulo-icono { font-size: 4rem; margin-bottom: 0.5rem; animation: flotar 3s ease-in-out infinite; }
+.titulo-principal {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.8rem, 8vw, 5rem);
+    color: var(--t-texto-claro);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    text-shadow: 0 0 40px var(--t-acento-glow);
+    transition: text-shadow 0.8s ease;
+}
+.titulo-click {
+    position: absolute;
+    bottom: 12vh; left: 0; right: 0;
+    text-align: center;
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    color: #555;
+    letter-spacing: 0.08em;
+    animation: parpadeo 2.5s ease-in-out infinite, fadeIn 2s 0.8s ease-out both;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PANTALLA 2 — SELECCIÓN DE MODO
+   ══════════════════════════════════════════════════════════ */
+#pantalla-modos { padding: 2rem; }
+
+.modos-contenido {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2rem; max-width: 500px; width: 100%;
+}
+.modos-titulo {
+    font-weight: 800; font-size: clamp(1.3rem, 4vw, 1.8rem);
+    color: var(--t-texto-claro); text-align: center;
+    animation: fadeInUp 0.5s ease-out both;
+    transition: color 0.6s ease;
+}
+.modos-selector {
+    display: flex; align-items: center; gap: 1rem; width: 100%;
+    animation: fadeInUp 0.5s 0.1s ease-out both;
+}
+.flecha-modo {
+    flex-shrink: 0; width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--t-borde); border-radius: 50%;
+    background: var(--t-fondo-panel); color: var(--t-texto-claro);
+    font-size: 1.6rem; font-weight: 300; cursor: pointer;
+    transition: all 0.25s ease; line-height: 1; padding: 0;
+    font-family: 'Outfit', sans-serif;
+}
+.flecha-modo:hover {
+    background: var(--t-acento); border-color: var(--t-acento);
+    transform: scale(1.1); box-shadow: 0 0 20px var(--t-acento-glow);
+}
+.modo-actual {
+    flex: 1; text-align: center; min-height: 90px;
+    display: flex; flex-direction: column; justify-content: center;
+    background: var(--t-fondo-panel); border: 1px solid var(--t-borde);
+    border-radius: var(--radio); padding: 1rem 1.2rem;
+    transition: background-color 0.6s ease, border-color 0.6s ease;
+}
+.modo-nombre {
+    font-weight: 700; font-size: clamp(1.1rem, 3vw, 1.4rem);
+    color: var(--t-acento); display: block; margin-bottom: 0.3rem;
+    transition: color 0.6s ease;
+}
+.modo-descripcion {
+    font-size: clamp(0.75rem, 2vw, 0.85rem);
+    color: #888; line-height: 1.4;
+}
+
+.modos-indicadores { display: flex; gap: 0.5rem; justify-content: center; }
+.indicador-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--t-borde); transition: all 0.3s; cursor: pointer;
+}
+.indicador-dot.activo {
+    background: var(--t-acento);
+    box-shadow: 0 0 8px var(--t-acento-glow);
+    transform: scale(1.25);
+}
+
+/* Botones generales */
+.btn-jugar, .btn-combate {
+    font-family: 'Outfit', sans-serif; font-weight: 700;
+    font-size: 1.1rem; padding: 0.8rem 3rem; border: none;
+    border-radius: var(--radio); background: var(--t-acento);
+    color: #fff; cursor: pointer; transition: all 0.3s;
+    letter-spacing: 0.04em;
+}
+.btn-jugar:hover, .btn-combate:hover {
+    background: var(--t-acento-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--t-acento-glow);
+}
+.btn-jugar:disabled, .btn-combate:disabled {
+    opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none;
+}
+.btn-secundario {
+    font-family: 'Outfit', sans-serif; font-weight: 600;
+    font-size: 0.85rem; padding: 0.55rem 1.2rem;
+    border: 1px solid var(--t-borde); border-radius: var(--radio);
+    background: var(--t-fondo-panel); color: var(--t-texto-claro);
+    cursor: pointer; transition: all 0.2s;
+}
+.btn-secundario:hover {
+    background: var(--t-acento); border-color: var(--t-acento);
+}
+
+/* ══════════════════════════════════════════════════════════
+   PANTALLA 3 — JUEGO CLÁSICO
+   ══════════════════════════════════════════════════════════ */
+#pantalla-juego { overflow-y: auto; padding: 1rem; }
+
+#app {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 1rem; max-width: 700px; width: 100%;
+    animation: fadeInUp 0.6s ease-out both;
+}
+#cabecera { text-align: center; }
+#cabecera h1 {
+    font-weight: 800; font-size: 1.8rem;
+    color: var(--t-texto-claro); letter-spacing: -0.02em;
+}
+.subtitulo { font-size: 0.85rem; color: #666; margin-top: 0.2rem; }
+
+#panel-info { display: flex; justify-content: space-between; width: 100%; gap: 0.5rem; }
+.contador {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    background: var(--t-fondo-panel); border: 1px solid var(--t-borde);
+    border-radius: var(--radio); padding: 0.6rem 0.8rem;
+}
+.contador .etiqueta { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #888; }
+.contador .valor { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--t-texto-claro); }
+.aliados .valor { color: var(--aliado); }
+.enemigos .valor { color: var(--enemigo); }
+
+#tablero {
+    border: 2px solid var(--t-borde); border-radius: var(--radio);
+    box-shadow: var(--sombra); background: var(--t-fondo-panel);
+    image-rendering: pixelated; width: 100%; max-width: 600px; aspect-ratio: 1;
+}
+
+#controles { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; align-items: center; }
+button {
+    font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.85rem;
+    padding: 0.55rem 1.2rem; border: 1px solid var(--t-borde);
+    border-radius: var(--radio); background: var(--t-fondo-panel);
+    color: var(--t-texto-claro); cursor: pointer; transition: all 0.2s;
+}
+button:hover:not(:disabled) { background: var(--t-acento); border-color: var(--t-acento); transform: translateY(-1px); }
+button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.control-velocidad { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #888; }
+#rango-velocidad { width: 90px; accent-color: var(--t-acento); }
+#texto-velocidad { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; min-width: 3.5em; }
+
+#mensaje-final {
+    font-weight: 800; font-size: 1.4rem; padding: 0.8rem 1.6rem;
+    border-radius: var(--radio); text-align: center; animation: aparecer 0.4s ease-out;
+}
+#mensaje-final.victoria { color: var(--exito); background: rgba(66,245,160,0.08); border: 1px solid rgba(66,245,160,0.25); }
+#mensaje-final.derrota { color: var(--derrota); background: rgba(232,69,69,0.08); border: 1px solid rgba(232,69,69,0.25); }
+.oculto { display: none !important; }
+
+/* ══════════════════════════════════════════════════════════
+   PANTALLA 4 — SELECCIÓN DE PERSONAJES
+   ══════════════════════════════════════════════════════════ */
+#pantalla-seleccion { overflow-y: auto; padding: 1.5rem; }
+
+.seleccion-contenido {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 1.2rem; max-width: 800px; width: 100%;
+    animation: fadeInUp 0.5s ease-out both;
+}
+.seleccion-titulo {
+    font-family: 'Noto Serif JP', serif; font-weight: 700;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    color: var(--t-texto-claro); text-align: center;
+}
+.seleccion-sub { font-size: 0.9rem; color: #888; text-align: center; }
+.seleccion-sub strong { color: var(--t-acento); }
+
+/* Barra de equipo actual */
+.equipo-actual {
+    display: flex; align-items: center; gap: 0.8rem;
+    background: var(--t-fondo-panel); border: 1px solid var(--t-borde);
+    border-radius: var(--radio); padding: 0.6rem 1rem;
+    width: 100%; max-width: 600px;
+}
+.equipo-label { font-size: 0.8rem; color: #888; white-space: nowrap; }
+.equipo-slots {
+    display: flex; gap: 0.4rem; flex: 1; min-height: 32px;
+    flex-wrap: wrap;
+}
+.equipo-slot {
+    background: var(--t-acento); color: #fff;
+    padding: 0.2rem 0.6rem; border-radius: 6px;
+    font-size: 0.75rem; font-weight: 600;
+    animation: aparecer 0.2s ease-out;
+}
+.equipo-contador {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: var(--t-acento); font-weight: 700;
+}
+
+/* Grid de personajes */
+.grid-personajes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.7rem; width: 100%;
+}
+
+.tarjeta-personaje {
+    background: var(--t-fondo-panel); border: 2px solid var(--t-borde);
+    border-radius: var(--radio); padding: 0.8rem;
+    cursor: pointer; transition: all 0.25s ease;
+    user-select: none;
+}
+.tarjeta-personaje:hover {
+    border-color: var(--t-acento);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--t-acento-glow);
+}
+.tarjeta-personaje.seleccionado {
+    border-color: var(--t-acento);
+    background: rgba(170, 204, 36, 0.1);
+    box-shadow: 0 0 12px var(--t-acento-glow);
+}
+.tarjeta-personaje.deshabilitado {
+    opacity: 0.4; cursor: not-allowed; pointer-events: none;
+}
+.pj-nombre {
+    font-weight: 700; font-size: 0.95rem;
+    color: var(--t-texto-claro); margin-bottom: 0.15rem;
+}
+.pj-titulo { font-size: 0.72rem; color: #888; font-style: italic; margin-bottom: 0.4rem; }
+.pj-efecto {
+    display: inline-block; font-size: 0.68rem; font-weight: 700;
+    padding: 0.15rem 0.5rem; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+}
+/* Colores por tipo de efecto */
+.efecto-sangrado    { background: #3d1515; color: #ff6b6b; }
+.efecto-ruptura     { background: #2d1f0a; color: #e8a838; }
+.efecto-choque      { background: #1a1a3a; color: #7c8aff; }
+.efecto-marchitamiento { background: #2a1a2e; color: #c77dff; }
+.efecto-fragilidad  { background: #1a2a2a; color: #5ecfcf; }
+.efecto-marca       { background: #2e2a1a; color: #ffe066; }
+.efecto-floracion   { background: #1a2e1a; color: #7dff7d; }
+
+.seleccion-acciones { display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
+
+/* ══════════════════════════════════════════════════════════
+   PANTALLA 5 — COMBATE LOTUS
+   ══════════════════════════════════════════════════════════ */
+#pantalla-combate { overflow-y: auto; padding: 1rem; }
+
+.combate-layout {
+    display: flex; flex-direction: column; gap: 0.8rem;
+    max-width: 750px; width: 100%;
+    animation: fadeInUp 0.5s ease-out both;
+}
+
+/* Panel del jefe */
+.jefe-panel {
+    background: var(--t-fondo-panel); border: 1px solid var(--t-borde);
+    border-radius: var(--radio); padding: 1rem;
+}
+.jefe-info { margin-bottom: 0.6rem; }
+.jefe-nombre {
+    font-family: 'Noto Serif JP', serif; font-weight: 700;
+    font-size: 1.2rem; color: var(--t-texto-claro); margin-bottom: 0.4rem;
+}
+.jefe-barra-vida {
+    position: relative; height: 24px;
+    background: #1a1a1a; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--t-borde);
+}
+.jefe-vida-fill {
+    height: 100%; background: linear-gradient(90deg, #3a6c0d, #aacc24);
+    border-radius: 12px; transition: width 0.5s ease;
+    box-shadow: 0 0 8px rgba(170, 204, 36, 0.4);
+}
+.jefe-vida-texto {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; font-weight: 700; color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* Efectos del jefe */
+.jefe-efectos {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem;
+}
+.efecto-badge {
+    display: flex; align-items: center; gap: 0.3rem;
+    padding: 0.2rem 0.5rem; border-radius: 4px;
+    font-size: 0.7rem; font-weight: 700;
+}
+
+/* Log de combate */
+.combate-log {
+    background: var(--t-fondo-panel); border: 1px solid var(--t-borde);
+    border-radius: var(--radio); padding: 0.8rem;
+    max-height: 200px; overflow-y: auto;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+    line-height: 1.6; color: #999;
+    scroll-behavior: smooth;
+}
+.combate-log p { margin-bottom: 0.2rem; }
+.log-dano { color: #ff6b6b; }
+.log-efecto { color: var(--t-acento); }
+.log-turno { color: var(--t-texto-claro); font-weight: 700; border-top: 1px solid var(--t-borde); padding-top: 0.3rem; margin-top: 0.3rem; }
+.log-jefe { color: #e8a838; }
+.log-victoria { color: var(--exito); font-weight: 700; }
+.log-derrota { color: var(--derrota); font-weight: 700; }
+
+/* Equipo en combate */
+.equipo-combate {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 0.5rem;
+}
+.pj-combate-card {
+    background: var(--t-fondo-panel); border: 1px solid var(--t-borde);
+    border-radius: 8px; padding: 0.5rem; text-align: center;
+    transition: all 0.3s;
+}
+.pj-combate-card.activo {
+    border-color: var(--t-acento);
+    box-shadow: 0 0 10px var(--t-acento-glow);
+}
+.pj-combate-card.muerto { opacity: 0.3; }
+.pj-combate-nombre { font-size: 0.8rem; font-weight: 700; color: var(--t-texto-claro); }
+.pj-combate-hp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; color: var(--t-acento);
+}
+.pj-combate-efecto { font-size: 0.6rem; color: #888; }
+
+/* Controles de combate */
+.combate-controles {
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    justify-content: center;
+}
+.turno-indicador {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; color: #888;
+}
+.btn-atacar {
+    padding: 0.7rem 2.5rem; font-size: 1rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   ANIMACIONES
+   ══════════════════════════════════════════════════════════ */
+@keyframes fadeIn     { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp   { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes aparecer   { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+@keyframes parpadeo   { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+@keyframes flotar     { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVO
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 500px) {
+    #cabecera h1 { font-size: 1.3rem; }
+    .contador .valor { font-size: 1.2rem; }
+    button { padding: 0.45rem 0.8rem; font-size: 0.78rem; }
+    .flecha-modo { width: 40px; height: 40px; font-size: 1.3rem; }
+    .modo-actual { padding: 0.8rem; min-height: 75px; }
+    .btn-jugar { padding: 0.7rem 2rem; font-size: 1rem; }
+    .titulo-click { bottom: 8vh; }
+    .grid-personajes { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
+</style>
+</head>
+<body class="tema-default">
+
+    <!-- ═══════════════════════════════════════════════════════
+         PANTALLA 1: Título inicial
+         ═══════════════════════════════════════════════════════ -->
+    <div id="pantalla-titulo" class="pantalla activa">
+        <div class="titulo-contenido">
+            <div class="titulo-icono">🎮</div>
+            <h1 class="titulo-principal">Game Bar</h1>
+        </div>
+        <p class="titulo-click">Haz click para iniciar</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PANTALLA 2: Selección de modo
+         ═══════════════════════════════════════════════════════ -->
+    <div id="pantalla-modos" class="pantalla">
+        <div class="modos-contenido">
+            <h2 class="modos-titulo">Selecciona modo de juego</h2>
+            <div class="modos-selector">
+                <button id="btn-modo-prev" class="flecha-modo" aria-label="Modo anterior">‹</button>
+                <div class="modo-actual">
+                    <span id="modo-nombre" class="modo-nombre"></span>
+                    <p id="modo-descripcion" class="modo-descripcion"></p>
+                </div>
+                <button id="btn-modo-next" class="flecha-modo" aria-label="Modo siguiente">›</button>
+            </div>
+            <div class="modos-indicadores" id="modos-indicadores"></div>
+            <button id="btn-jugar" class="btn-jugar">Jugar</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PANTALLA 3: Juego Clásico
+         ═══════════════════════════════════════════════════════ -->
+    <div id="pantalla-juego" class="pantalla">
+        <div id="app">
+            <header id="cabecera">
+                <h1>⚔️ Campo de Batalla</h1>
+                <p class="subtitulo">Aliados vs Enemigos — simulación de combate por turnos</p>
+            </header>
+            <div id="panel-info">
+                <div class="contador aliados">
+                    <span class="etiqueta">🟡 Aliados</span>
+                    <span id="cuenta-aliados" class="valor">0</span>
+                </div>
+                <div class="contador turno-info">
+                    <span class="etiqueta">Turno</span>
+                    <span id="cuenta-turno" class="valor">0</span>
+                </div>
+                <div class="contador enemigos">
+                    <span class="etiqueta">🔴 Enemigos</span>
+                    <span id="cuenta-enemigos" class="valor">0</span>
+                </div>
+            </div>
+            <canvas id="tablero"></canvas>
+            <div id="controles">
+                <button id="btn-iniciar">▶ Iniciar</button>
+                <button id="btn-pausar" disabled>⏸ Pausar</button>
+                <button id="btn-reiniciar">🔄 Reiniciar</button>
+                <button id="btn-menu">🏠 Menú</button>
+                <label class="control-velocidad">
+                    Velocidad:
+                    <input type="range" id="rango-velocidad" min="20" max="500" value="100" step="10">
+                    <span id="texto-velocidad">100ms</span>
+                </label>
+            </div>
+            <div id="mensaje-final" class="oculto"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PANTALLA 4: Selección de personajes (Lotus)
+         ═══════════════════════════════════════════════════════ -->
+    <div id="pantalla-seleccion" class="pantalla">
+        <div class="seleccion-contenido">
+            <h2 class="seleccion-titulo">Elige tu equipo</h2>
+            <p class="seleccion-sub">Selecciona hasta <strong>6</strong> guerreros</p>
+
+            <div class="equipo-actual">
+                <span class="equipo-label">Equipo:</span>
+                <div id="equipo-slots" class="equipo-slots"></div>
+                <span id="equipo-contador" class="equipo-contador">0 / 6</span>
+            </div>
+
+            <div id="grid-personajes" class="grid-personajes"></div>
+
+            <div class="seleccion-acciones">
+                <button id="btn-confirmar-equipo" class="btn-jugar" disabled>Confirmar equipo</button>
+                <button id="btn-volver-modos" class="btn-secundario">← Volver</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PANTALLA 5: Combate Lotus of the Damned
+         ═══════════════════════════════════════════════════════ -->
+    <div id="pantalla-combate" class="pantalla">
+        <div class="combate-layout">
+            <!-- Barra superior: info del jefe -->
+            <div class="jefe-panel">
+                <div class="jefe-info">
+                    <h2 class="jefe-nombre">🌸 Lotus Guardian</h2>
+                    <div class="jefe-barra-vida">
+                        <div id="jefe-vida-fill" class="jefe-vida-fill"></div>
+                        <span id="jefe-vida-texto" class="jefe-vida-texto"></span>
+                    </div>
+                </div>
+                <div id="jefe-efectos" class="jefe-efectos"></div>
+            </div>
+
+            <!-- Log de combate -->
+            <div id="combate-log" class="combate-log">
+                <p class="log-intro">El combate está a punto de comenzar...</p>
+            </div>
+
+            <!-- Equipo del jugador -->
+            <div id="equipo-combate" class="equipo-combate"></div>
+
+            <!-- Controles de combate -->
+            <div class="combate-controles">
+                <span id="turno-indicador" class="turno-indicador">Turno 0</span>
+                <button id="btn-atacar" class="btn-combate btn-atacar">⚔️ Atacar</button>
+                <button id="btn-combate-menu" class="btn-secundario">🏠 Menú</button>
+            </div>
+        </div>
+    </div>
+
+    
+
+<script>
+// main.js — Game Bar
+// Sistema modular: Menú → Modos → Juego Clásico / Lotus of the Damned
+
+"use strict";
+
+// ══════════════════════════════════════════════════════════
+// MÓDULO: Efectos de estado (funciones puras, testeables)
+// ══════════════════════════════════════════════════════════
+const Efectos = (() => {
+
+    /**
+     * Sangrado — daño progresivo al final del turno.
+     * Aplica daño = acumulaciones, luego reduce a ceil(acum / 2).
+     */
+    function aplicarSangradoFinTurno(jefe) {
+        const acum = jefe.efectos.sangrado;
+        if (acum <= 0) return { dano: 0, nuevasAcum: 0 };
+        const dano = acum;
+        const nuevas = Math.ceil(acum / 2);
+        return { dano, nuevasAcum: nuevas >= 1 ? nuevas : 0 };
+    }
+
+    /**
+     * Ruptura — daño extra al recibir golpe.
+     * Daño extra = acumulaciones, luego reduce en ceil(10% del actual).
+     */
+    function aplicarRupturaAlGolpe(jefe) {
+        const acum = jefe.efectos.ruptura;
+        if (acum <= 0) return { danoExtra: 0, nuevasAcum: 0 };
+        const danoExtra = acum;
+        const reduccion = Math.ceil(acum * 0.1);
+        const nuevas = Math.max(0, acum - reduccion);
+        return { danoExtra, nuevasAcum: nuevas };
+    }
+
+    /**
+     * Choque — al llegar a 30, el jefe pierde 1 turno.
+     * Retorna si el jefe debe ser stunneado.
+     */
+    function comprobarChoque(jefe) {
+        if (jefe.efectos.choque >= 30) {
+            return { stunned: true, nuevasAcum: 0 };
+        }
+        return { stunned: false, nuevasAcum: jefe.efectos.choque };
+    }
+
+    /**
+     * Choque — cuando un aliado recibe daño, se reducen 5 acumulaciones.
+     */
+    function reducirChoquePorDanoAliado(jefe) {
+        const nuevas = Math.max(0, jefe.efectos.choque - 5);
+        return nuevas;
+    }
+
+    /**
+     * Marchitamiento — reduce el daño del jefe.
+     * Reducción = 0.1 * n %, máximo 99 acumulaciones.
+     * Al final del turno pierde 2 acumulaciones.
+     */
+    function calcularReduccionMarchitamiento(acum) {
+        const n = Math.min(acum, 99);
+        return (0.1 * n) / 100; // Fracción decimal del porcentaje
+    }
+
+    function reducirMarchitamientoFinTurno(acum) {
+        return Math.max(0, acum - 2);
+    }
+
+    /**
+     * Fragilidad — el jefe recibe más daño.
+     * Incremento = 0.1 * n %, máx 5% adicional.
+     * Al final del turno pierde 2.
+     */
+    function calcularBonusFragilidad(acum) {
+        const porcentaje = Math.min(0.1 * acum, 5);
+        return porcentaje / 100; // Fracción decimal
+    }
+
+    function reducirFragilidadFinTurno(acum) {
+        return Math.max(0, acum - 2);
+    }
+
+    /**
+     * Marca — el siguiente ataque hace 15% más daño.
+     * No es acumulable: activo/inactivo.
+     */
+    function calcularBonusMarca(marcaActiva) {
+        return marcaActiva ? 0.15 : 0;
+    }
+
+    /**
+     * Floración — al llegar a 20, explota.
+     * Daño = 20 * 10% del ATK del último aplicador.
+     */
+    function comprobarFloracion(jefe) {
+        if (jefe.efectos.floracion >= 20) {
+            const atkAplicador = jefe.ultimoAplicadorFloracionATK || 0;
+            const dano = Math.ceil(20 * 0.1 * atkAplicador);
+            return { explota: true, dano, nuevasAcum: 0 };
+        }
+        return { explota: false, dano: 0, nuevasAcum: jefe.efectos.floracion };
+    }
+
+    return {
+        aplicarSangradoFinTurno,
+        aplicarRupturaAlGolpe,
+        comprobarChoque,
+        reducirChoquePorDanoAliado,
+        calcularReduccionMarchitamiento,
+        reducirMarchitamientoFinTurno,
+        calcularBonusFragilidad,
+        reducirFragilidadFinTurno,
+        calcularBonusMarca,
+        comprobarFloracion,
+    };
+})();
+
+
+// ══════════════════════════════════════════════════════════
+// MÓDULO: Datos de personajes
+// ══════════════════════════════════════════════════════════
+const PERSONAJES = [
+    { id: "aiko",    nombre: "Aiko",    titulo: "la Espada Carmesí",        efecto: "sangrado",       atk: 45, hp: 120 },
+    { id: "ren",     nombre: "Ren",     titulo: "el Cazador Silencioso",    efecto: "ruptura",        atk: 50, hp: 100 },
+    { id: "meilin",  nombre: "Meilin",  titulo: "Sacerdotisa del Trueno",   efecto: "choque",         atk: 40, hp: 130 },
+    { id: "katsuro", nombre: "Katsuro", titulo: "Guardia del Dragón",       efecto: "sangrado",       atk: 42, hp: 140 },
+    { id: "hana",    nombre: "Hana",    titulo: "Flor Errante",             efecto: "marchitamiento", atk: 35, hp: 110 },
+    { id: "jiro",    nombre: "Jiro",    titulo: "Espadachín del Crepúsculo",efecto: "ruptura",        atk: 55, hp: 90 },
+    { id: "lian",    nombre: "Lian",    titulo: "Monje del Viento",         efecto: "fragilidad",     atk: 38, hp: 125 },
+    { id: "sora",    nombre: "Sora",    titulo: "Bailarina de Loto",        efecto: "fragilidad",     atk: 36, hp: 115 },
+    { id: "daichi",  nombre: "Daichi",  titulo: "Martillo de Jade",         efecto: "choque",         atk: 60, hp: 150 },
+    { id: "yume",    nombre: "Yume",    titulo: "Oráculo de la Niebla",     efecto: "marca",          atk: 44, hp: 105 },
+    { id: "takeda",  nombre: "Takeda",  titulo: "General Caído",            efecto: "sangrado",       atk: 48, hp: 135 },
+    { id: "lotus",   nombre: "Lotus",   titulo: "Portador de Pétalos",      efecto: "floracion",      atk: 40, hp: 120 },
+];
+
+// Acumulaciones que aplica cada ataque por tipo de efecto
+const ACUM_POR_GOLPE = {
+    sangrado: 5,
+    ruptura: 4,
+    choque: 8,
+    marchitamiento: 6,
+    fragilidad: 5,
+    marca: 1,     // Activa/desactiva
+    floracion: 5,
+};
+
+
+// ══════════════════════════════════════════════════════════
+// MÓDULO: Motor de combate (Lotus of the Damned)
+// ══════════════════════════════════════════════════════════
+const Combate = (() => {
+    let jefe = null;
+    let equipo = [];       // Personajes del jugador (con hp actual)
+    let turno = 0;
+    let pjActualIdx = 0;   // Índice del personaje que ataca ahora
+    let combateActivo = false;
+
+    function crearJefe() {
+        return {
+            nombre: "Lotus Guardian",
+            hpMax: 2000,
+            hp: 2000,
+            atk: 30,
+            efectos: {
+                sangrado: 0,
+                ruptura: 0,
+                choque: 0,
+                marchitamiento: 0,
+                fragilidad: 0,
+                marca: false,
+                floracion: 0,
+            },
+            stunned: false,
+            ultimoAplicadorFloracionATK: 0,
+        };
+    }
+
+    function crearEquipo(personajesSeleccionados) {
+        return personajesSeleccionados.map(p => ({
+            ...p,
+            hpActual: p.hp,
+            vivo: true,
+        }));
+    }
+
+    function iniciar(personajesSeleccionados) {
+        jefe = crearJefe();
+        equipo = crearEquipo(personajesSeleccionados);
+        turno = 0;
+        pjActualIdx = 0;
+        combateActivo = true;
+        avanzarAPersonajeVivo();
+        renderUI();
+        logMsg("¡El combate contra " + jefe.nombre + " comienza!", "log-turno");
+    }
+
+    function avanzarAPersonajeVivo() {
+        let intentos = 0;
+        while (intentos < equipo.length) {
+            if (equipo[pjActualIdx].vivo) return;
+            pjActualIdx = (pjActualIdx + 1) % equipo.length;
+            intentos++;
+        }
+    }
+
+    function obtenerVivos() {
+        return equipo.filter(p => p.vivo);
+    }
+
+    // ── Turno del jugador: atacar con el personaje actual ──
+    function atacar() {
+        if (!combateActivo) return;
+        const pj = equipo[pjActualIdx];
+        if (!pj.vivo) return;
+
+        // Calcular daño base
+        let danoBase = pj.atk;
+
+        // Bonus de Marca
+        const bonusMarca = Efectos.calcularBonusMarca(jefe.efectos.marca);
+        if (bonusMarca > 0) {
+            danoBase = Math.ceil(danoBase * (1 + bonusMarca));
+            jefe.efectos.marca = false;
+            logMsg("💛 Marca consumida: +" + Math.round(bonusMarca * 100) + "% daño", "log-efecto");
+        }
+
+        // Bonus de Fragilidad
+        const bonusFrag = Efectos.calcularBonusFragilidad(jefe.efectos.fragilidad);
+        if (bonusFrag > 0) {
+            danoBase = Math.ceil(danoBase * (1 + bonusFrag));
+        }
+
+        // Daño extra de Ruptura
+        const ruptRes = Efectos.aplicarRupturaAlGolpe(jefe);
+        jefe.efectos.ruptura = ruptRes.nuevasAcum;
+        const danoTotal = danoBase + ruptRes.danoExtra;
+
+        jefe.hp = Math.max(0, jefe.hp - danoTotal);
+
+        let msg = `⚔️ ${pj.nombre} ataca por ${danoBase} daño`;
+        if (ruptRes.danoExtra > 0) msg += ` (+${ruptRes.danoExtra} Ruptura)`;
+        logMsg(msg, "log-dano");
+
+        // Aplicar efecto del personaje
+        aplicarEfecto(pj);
+
+        // Comprobar floración
+        const florRes = Efectos.comprobarFloracion(jefe);
+        if (florRes.explota) {
+            jefe.hp = Math.max(0, jefe.hp - florRes.dano);
+            jefe.efectos.floracion = florRes.nuevasAcum;
+            logMsg(`🌸 ¡Floración explota! ${florRes.dano} daño adicional`, "log-efecto");
+        }
+
+        // Comprobar victoria
+        if (jefe.hp <= 0) {
+            combateActivo = false;
+            logMsg("🏆 ¡Victoria! " + jefe.nombre + " ha sido derrotado.", "log-victoria");
+            renderUI();
+            document.getElementById("btn-atacar").disabled = true;
+            return;
+        }
+
+        // Avanzar al siguiente personaje
+        pjActualIdx = (pjActualIdx + 1) % equipo.length;
+        avanzarAPersonajeVivo();
+
+        // Si hemos dado la vuelta completa → fin de ronda
+        if (pjActualIdx === 0 || todosMuertos()) {
+            finDeRonda();
+        }
+
+        renderUI();
+    }
+
+    function aplicarEfecto(pj) {
+        const tipo = pj.efecto;
+        const acum = ACUM_POR_GOLPE[tipo] || 0;
+
+        switch (tipo) {
+            case "sangrado":
+                jefe.efectos.sangrado += acum;
+                logMsg(`🩸 +${acum} Sangrado (total: ${jefe.efectos.sangrado})`, "log-efecto");
+                break;
+            case "ruptura":
+                jefe.efectos.ruptura += acum;
+                logMsg(`💥 +${acum} Ruptura (total: ${jefe.efectos.ruptura})`, "log-efecto");
+                break;
+            case "choque":
+                jefe.efectos.choque += acum;
+                logMsg(`⚡ +${acum} Choque (total: ${jefe.efectos.choque})`, "log-efecto");
+                break;
+            case "marchitamiento":
+                jefe.efectos.marchitamiento = Math.min(99, jefe.efectos.marchitamiento + acum);
+                logMsg(`🍂 +${acum} Marchitamiento (total: ${jefe.efectos.marchitamiento})`, "log-efecto");
+                break;
+            case "fragilidad":
+                jefe.efectos.fragilidad += acum;
+                logMsg(`🔻 +${acum} Fragilidad (total: ${jefe.efectos.fragilidad})`, "log-efecto");
+                break;
+            case "marca":
+                jefe.efectos.marca = true;
+                logMsg(`🎯 Marca aplicada al jefe`, "log-efecto");
+                break;
+            case "floracion":
+                jefe.efectos.floracion += acum;
+                jefe.ultimoAplicadorFloracionATK = pj.atk;
+                logMsg(`🌺 +${acum} Floración (total: ${jefe.efectos.floracion})`, "log-efecto");
+                break;
+        }
+    }
+
+    // ── Fin de ronda: efectos de fin de turno + ataque del jefe ──
+    function finDeRonda() {
+        turno++;
+        logMsg(`── Fin de ronda ${turno} ──`, "log-turno");
+
+        // Sangrado al final del turno
+        const sangRes = Efectos.aplicarSangradoFinTurno(jefe);
+        if (sangRes.dano > 0) {
+            jefe.hp = Math.max(0, jefe.hp - sangRes.dano);
+            jefe.efectos.sangrado = sangRes.nuevasAcum;
+            logMsg(`🩸 Sangrado inflige ${sangRes.dano} daño (quedan ${sangRes.nuevasAcum} acum.)`, "log-dano");
+        }
+
+        // Reducir marchitamiento y fragilidad
+        jefe.efectos.marchitamiento = Efectos.reducirMarchitamientoFinTurno(jefe.efectos.marchitamiento);
+        jefe.efectos.fragilidad = Efectos.reducirFragilidadFinTurno(jefe.efectos.fragilidad);
+
+        // Comprobar victoria por sangrado
+        if (jefe.hp <= 0) {
+            combateActivo = false;
+            logMsg("🏆 ¡Victoria! " + jefe.nombre + " cayó por efectos.", "log-victoria");
+            renderUI();
+            document.getElementById("btn-atacar").disabled = true;
+            return;
+        }
+
+        // Comprobar Choque
+        const choqueRes = Efectos.comprobarChoque(jefe);
+        if (choqueRes.stunned) {
+            jefe.efectos.choque = choqueRes.nuevasAcum;
+            jefe.stunned = true;
+            logMsg(`⚡ ¡Choque activado! El jefe pierde su turno.`, "log-efecto");
+        } else {
+            jefe.stunned = false;
+        }
+
+        // Turno del jefe
+        if (!jefe.stunned) {
+            turnoDelJefe();
+        } else {
+            logMsg(`${jefe.nombre} está aturdido y no puede actuar.`, "log-jefe");
+            jefe.stunned = false;
+        }
+
+        // Reset del índice de personajes
+        pjActualIdx = 0;
+        avanzarAPersonajeVivo();
+
+        if (todosMuertos()) {
+            combateActivo = false;
+            logMsg("💀 Todo tu equipo ha caído...", "log-derrota");
+            document.getElementById("btn-atacar").disabled = true;
+        }
+
+        renderUI();
+    }
+
+    function turnoDelJefe() {
+        const vivos = obtenerVivos();
+        if (vivos.length === 0) return;
+
+        // Reducción de daño por marchitamiento
+        const redMarch = Efectos.calcularReduccionMarchitamiento(jefe.efectos.marchitamiento);
+        let dano = Math.max(1, Math.ceil(jefe.atk * (1 - redMarch)));
+
+        // El jefe ataca a un personaje aleatorio vivo
+        const objetivo = vivos[Math.floor(Math.random() * vivos.length)];
+        objetivo.hpActual = Math.max(0, objetivo.hpActual - dano);
+
+        logMsg(`🐉 ${jefe.nombre} ataca a ${objetivo.nombre} por ${dano} daño`, "log-jefe");
+
+        if (objetivo.hpActual <= 0) {
+            objetivo.vivo = false;
+            logMsg(`☠️ ${objetivo.nombre} ha caído!`, "log-derrota");
+        }
+
+        // Reducir choque porque un aliado recibió daño
+        jefe.efectos.choque = Efectos.reducirChoquePorDanoAliado(jefe);
+    }
+
+    function todosMuertos() {
+        return equipo.every(p => !p.vivo);
+    }
+
+    // ── Renderizado del UI de combate ──
+    function renderUI() {
+        // Barra de vida del jefe
+        if (!jefe) return;
+        const pct = Math.max(0, (jefe.hp / jefe.hpMax) * 100);
+        document.getElementById("jefe-vida-fill").style.width = pct + "%";
+        document.getElementById("jefe-vida-texto").textContent = `${jefe.hp} / ${jefe.hpMax}`;
+
+        // Efectos del jefe
+        const contenedor = document.getElementById("jefe-efectos");
+        contenedor.innerHTML = "";
+        const efectoNames = {
+            sangrado: "🩸 Sangrado", ruptura: "💥 Ruptura", choque: "⚡ Choque",
+            marchitamiento: "🍂 Marchit.", fragilidad: "🔻 Fragil.",
+            marca: "🎯 Marca", floracion: "🌺 Floración"
+        };
+        for (const [key, label] of Object.entries(efectoNames)) {
+            const val = jefe.efectos[key];
+            if (key === "marca") {
+                if (val) {
+                    const badge = document.createElement("span");
+                    badge.className = `efecto-badge efecto-${key}`;
+                    badge.textContent = label;
+                    contenedor.appendChild(badge);
+                }
+            } else if (val > 0) {
+                const badge = document.createElement("span");
+                badge.className = `efecto-badge efecto-${key}`;
+                badge.textContent = `${label} ${val}`;
+                contenedor.appendChild(badge);
+            }
+        }
+
+        // Equipo
+        const equipoEl = document.getElementById("equipo-combate");
+        equipoEl.innerHTML = "";
+        equipo.forEach((pj, i) => {
+            const card = document.createElement("div");
+            card.className = "pj-combate-card";
+            if (i === pjActualIdx && combateActivo && pj.vivo) card.classList.add("activo");
+            if (!pj.vivo) card.classList.add("muerto");
+            card.innerHTML = `
+                <div class="pj-combate-nombre">${pj.nombre}</div>
+                <div class="pj-combate-hp">${pj.vivo ? pj.hpActual + "/" + pj.hp : "☠️"}</div>
+                <div class="pj-combate-efecto">${pj.efecto}</div>
+            `;
+            equipoEl.appendChild(card);
+        });
+
+        // Indicador de turno
+        document.getElementById("turno-indicador").textContent = `Ronda ${turno}`;
+    }
+
+    function logMsg(texto, clase) {
+        const log = document.getElementById("combate-log");
+        const p = document.createElement("p");
+        if (clase) p.className = clase;
+        p.textContent = texto;
+        log.appendChild(p);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function estaActivo() { return combateActivo; }
+
+    return { iniciar, atacar, estaActivo };
+})();
+
+
+// ══════════════════════════════════════════════════════════
+// MÓDULO: Selección de personajes
+// ══════════════════════════════════════════════════════════
+const Seleccion = (() => {
+    const MAX_EQUIPO = 6;
+    let seleccionados = new Set();
+
+    function init() {
+        seleccionados.clear();
+        renderGrid();
+        renderEquipo();
+        document.getElementById("btn-confirmar-equipo").disabled = true;
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById("grid-personajes");
+        grid.innerHTML = "";
+
+        PERSONAJES.forEach(pj => {
+            const card = document.createElement("div");
+            card.className = "tarjeta-personaje";
+            if (seleccionados.has(pj.id)) card.classList.add("seleccionado");
+            if (!seleccionados.has(pj.id) && seleccionados.size >= MAX_EQUIPO) {
+                card.classList.add("deshabilitado");
+            }
+
+            const claseEfecto = "efecto-" + pj.efecto;
+            card.innerHTML = `
+                <div class="pj-nombre">${pj.nombre}</div>
+                <div class="pj-titulo">${pj.titulo}</div>
+                <span class="pj-efecto ${claseEfecto}">${pj.efecto}</span>
+            `;
+
+            card.addEventListener("click", () => toggle(pj.id));
+            grid.appendChild(card);
+        });
+    }
+
+    function toggle(id) {
+        if (seleccionados.has(id)) {
+            seleccionados.delete(id);
+        } else {
+            if (seleccionados.size >= MAX_EQUIPO) return;
+            seleccionados.add(id);
+        }
+        renderGrid();
+        renderEquipo();
+    }
+
+    function renderEquipo() {
+        const slots = document.getElementById("equipo-slots");
+        slots.innerHTML = "";
+        seleccionados.forEach(id => {
+            const pj = PERSONAJES.find(p => p.id === id);
+            const span = document.createElement("span");
+            span.className = "equipo-slot";
+            span.textContent = pj.nombre;
+            slots.appendChild(span);
+        });
+        document.getElementById("equipo-contador").textContent = `${seleccionados.size} / ${MAX_EQUIPO}`;
+        document.getElementById("btn-confirmar-equipo").disabled = seleccionados.size === 0;
+    }
+
+    function obtenerSeleccionados() {
+        return PERSONAJES.filter(p => seleccionados.has(p.id));
+    }
+
+    return { init, obtenerSeleccionados };
+})();
+
+
+// ══════════════════════════════════════════════════════════
+// MÓDULO: Menú y navegación
+// ══════════════════════════════════════════════════════════
+const Menu = (() => {
+
+    const MODOS = [
+        {
+            id: "clasico",
+            nombre: "Clásico",
+            descripcion: "Dos bandos luchan en una cuadrícula 30×30. Los aliados huyen, los enemigos persiguen.",
+            tema: "tema-default",
+            arranque: (modo) => {
+                mostrarPantalla(document.getElementById("pantalla-juego"));
+                startClassicGame(modo);
+            },
+            config: {},
+        },
+        {
+            id: "lotus",
+            nombre: "Lotus of the Damned",
+            descripcion: "Combate por turnos contra un jefe legendario. Elige a tu equipo de guerreros y domina sus efectos.",
+            tema: "tema-lotus",
+            arranque: () => {
+                Seleccion.init();
+                mostrarPantalla(document.getElementById("pantalla-seleccion"));
+            },
+            config: {},
+        },
+    ];
+
+    let indiceActual = 0;
+
+    const pantallaTitulo = document.getElementById("pantalla-titulo");
+    const pantallaModos  = document.getElementById("pantalla-modos");
+    const elNombre       = document.getElementById("modo-nombre");
+    const elDescripcion  = document.getElementById("modo-descripcion");
+    const elIndicadores  = document.getElementById("modos-indicadores");
+
+    function mostrarPantalla(pantalla) {
+        document.querySelectorAll(".pantalla").forEach(p => p.classList.remove("activa"));
+        pantalla.classList.add("activa");
+    }
+
+    function aplicarTema(tema) {
+        document.body.className = tema;
+    }
+
+    function renderizarModo() {
+        const modo = MODOS[indiceActual];
+        elNombre.textContent = modo.nombre;
+        elDescripcion.textContent = modo.descripcion;
+        aplicarTema(modo.tema);
+        elIndicadores.querySelectorAll(".indicador-dot").forEach((d, i) => {
+            d.classList.toggle("activo", i === indiceActual);
+        });
+    }
+
+    function crearIndicadores() {
+        elIndicadores.innerHTML = "";
+        MODOS.forEach((_, i) => {
+            const dot = document.createElement("span");
+            dot.className = "indicador-dot" + (i === 0 ? " activo" : "");
+            dot.addEventListener("click", () => { indiceActual = i; renderizarModo(); });
+            elIndicadores.appendChild(dot);
+        });
+    }
+
+    function modoPrev() {
+        indiceActual = (indiceActual - 1 + MODOS.length) % MODOS.length;
+        renderizarModo();
+    }
+    function modoNext() {
+        indiceActual = (indiceActual + 1) % MODOS.length;
+        renderizarModo();
+    }
+
+    function confirmarModo() {
+        const modo = MODOS[indiceActual];
+        modo.arranque(modo);
+    }
+
+    function volverAModos() {
+        detenerJuego();
+        mostrarPantalla(pantallaModos);
+    }
+
+    function init() {
+        crearIndicadores();
+        renderizarModo();
+
+        pantallaTitulo.addEventListener("click", () => mostrarPantalla(pantallaModos));
+        document.getElementById("btn-modo-prev").addEventListener("click", modoPrev);
+        document.getElementById("btn-modo-next").addEventListener("click", modoNext);
+        document.getElementById("btn-jugar").addEventListener("click", confirmarModo);
+        document.getElementById("btn-menu").addEventListener("click", volverAModos);
+        document.getElementById("btn-combate-menu").addEventListener("click", volverAModos);
+        document.getElementById("btn-volver-modos").addEventListener("click", volverAModos);
+
+        // Confirmar equipo → iniciar combate Lotus
+        document.getElementById("btn-confirmar-equipo").addEventListener("click", () => {
+            const equipo = Seleccion.obtenerSeleccionados();
+            if (equipo.length === 0) return;
+            document.getElementById("combate-log").innerHTML = "";
+            mostrarPantalla(document.getElementById("pantalla-combate"));
+            document.getElementById("btn-atacar").disabled = false;
+            Combate.iniciar(equipo);
+        });
+
+        // Botón atacar en combate
+        document.getElementById("btn-atacar").addEventListener("click", () => {
+            Combate.atacar();
+        });
+
+        // Teclado
+        document.addEventListener("keydown", (e) => {
+            if (pantallaModos.classList.contains("activa")) {
+                if (e.key === "ArrowLeft") modoPrev();
+                if (e.key === "ArrowRight") modoNext();
+                if (e.key === "Enter") confirmarModo();
+            }
+            if (document.getElementById("pantalla-combate").classList.contains("activa")) {
+                if (e.key === " " || e.key === "Enter") {
+                    e.preventDefault();
+                    Combate.atacar();
+                }
+            }
+        });
+    }
+
+    // Exponer mostrarPantalla y volverAModos para uso externo
+    return { init, mostrarPantalla, volverAModos };
+})();
+
+
+// ══════════════════════════════════════════════════════════
+// JUEGO CLÁSICO — Lógica original (sin cambios funcionales)
+// ══════════════════════════════════════════════════════════
+const CONFIG = {
+    ANCHO: 30, ALTO: 30,
+    PROB_VACIO: 0.85, PROB_PERSONAJE: 0.05,
+    RADIO_DETECCION: 4, TAMANO_CELDA: 20,
+};
+const CONFIG_BASE = { ...CONFIG };
+const TIPO = { VACIO: 0, ALIADO: 1, ENEMIGO: 2, OBSTACULO_X: 3, OBSTACULO_O: 4, OBSTACULO_Z: 5 };
+
+let tablero = [], movidoEsteTurno = [], turnoClasico = 0, intervaloId = null, velocidad = 100, juegoActivo = false;
+
+const canvas = document.getElementById("tablero");
+const ctx = canvas.getContext("2d");
+const elAliados = document.getElementById("cuenta-aliados");
+const elEnemigos = document.getElementById("cuenta-enemigos");
+const elTurno = document.getElementById("cuenta-turno");
+const btnIniciar = document.getElementById("btn-iniciar");
+const btnPausar = document.getElementById("btn-pausar");
+const btnReiniciar = document.getElementById("btn-reiniciar");
+const rangoVelocidad = document.getElementById("rango-velocidad");
+const textoVelocidad = document.getElementById("texto-velocidad");
+const mensajeFinal = document.getElementById("mensaje-final");
+
+function startClassicGame(modo) {
+    Object.assign(CONFIG, CONFIG_BASE, modo.config || {});
+    turnoClasico = 0;
+    velocidad = parseInt(rangoVelocidad.value);
+    ocultarMensaje();
+    crearTablero();
+    ajustarCanvas();
+    dibujarTablero();
+    actualizarContadores();
+    btnIniciar.disabled = false;
+    btnPausar.disabled = true;
+    juegoActivo = false;
+}
+
+function crearTablero() {
+    tablero = [];
+    for (let i = 0; i < CONFIG.ALTO; i++) {
+        const f = [];
+        for (let j = 0; j < CONFIG.ANCHO; j++) f.push(generarEntidad());
+        tablero.push(f);
+    }
+}
+function generarEntidad() {
+    const r = Math.random();
+    if (r < CONFIG.PROB_VACIO) return TIPO.VACIO;
+    if (r < CONFIG.PROB_VACIO + CONFIG.PROB_PERSONAJE) return Math.random() < 0.5 ? TIPO.ALIADO : TIPO.ENEMIGO;
+    return [TIPO.OBSTACULO_X, TIPO.OBSTACULO_O, TIPO.OBSTACULO_Z][Math.floor(Math.random() * 3)];
+}
+function reiniciarMovidos() {
+    movidoEsteTurno = [];
+    for (let i = 0; i < CONFIG.ALTO; i++) movidoEsteTurno.push(new Array(CONFIG.ANCHO).fill(false));
+}
+
+const DIRECCIONES = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+
+function ejecutarTurno() {
+    turnoClasico++;
+    reiniciarMovidos();
+    resolverCombatesClasico();
+    const pos = [];
+    for (let i = 0; i < CONFIG.ALTO; i++) for (let j = 0; j < CONFIG.ANCHO; j++) if (esPersonaje(tablero[i][j])) pos.push({i,j});
+    mezclarArray(pos);
+    for (const p of pos) {
+        const t = tablero[p.i][p.j];
+        if (!esPersonaje(t) || movidoEsteTurno[p.i][p.j]) continue;
+        const en = buscarEnemigo(p.i, p.j, t, CONFIG.RADIO_DETECCION);
+        if (en) moverHaciaODesde(p.i, p.j, t, en); else moverAleatorio(p.i, p.j);
+    }
+    dibujarTablero(); actualizarContadores(); comprobarFinDelJuego();
+}
+
+function resolverCombatesClasico() {
+    const pel = [];
+    for (let i = 0; i < CONFIG.ALTO; i++) pel.push(new Array(CONFIG.ANCHO).fill(false));
+    for (let i = 0; i < CONFIG.ALTO; i++) for (let j = 0; j < CONFIG.ANCHO; j++) {
+        const t = tablero[i][j]; if (!esPersonaje(t) || pel[i][j]) continue;
+        const en = buscarEnemigo(i, j, t, 1);
+        if (en && !pel[en.i][en.j]) {
+            if (Math.random() < 0.5) tablero[i][j] = TIPO.VACIO; else tablero[en.i][en.j] = TIPO.VACIO;
+            pel[i][j] = true; pel[en.i][en.j] = true;
+        }
+    }
+}
+function buscarEnemigo(fi,fj,tipo,radio) {
+    let best=Infinity, pos=null;
+    for (let di=-radio;di<=radio;di++) for (let dj=-radio;dj<=radio;dj++) {
+        if (!di&&!dj) continue; const ni=fi+di,nj=fj+dj;
+        if (!dentroDelTablero(ni,nj)) continue;
+        const v = tablero[ni][nj];
+        if (esPersonaje(v) && v !== tipo) { const d=Math.abs(di)+Math.abs(dj); if (d<best) { best=d; pos={i:ni,j:nj}; } }
+    }
+    return pos;
+}
+function moverAleatorio(fi,fj) {
+    const dirs = [...DIRECCIONES]; mezclarArray(dirs);
+    for (const [di,dj] of dirs) {
+        const ni=fi+di,nj=fj+dj;
+        if (dentroDelTablero(ni,nj) && tablero[ni][nj]===TIPO.VACIO) {
+            tablero[ni][nj]=tablero[fi][fj]; tablero[fi][fj]=TIPO.VACIO; movidoEsteTurno[ni][nj]=true; return;
+        }
+    }
+}
+function moverHaciaODesde(fi,fj,tipo,enemigo) {
+    const di=Math.sign(enemigo.i-fi),dj=Math.sign(enemigo.j-fj);
+    let pi,pj;
+    if (tipo===TIPO.ALIADO){pi=-di;pj=-dj}else{pi=di;pj=dj}
+    const ni=fi+pi,nj=fj+pj;
+    if (dentroDelTablero(ni,nj)&&tablero[ni][nj]===TIPO.VACIO) {
+        tablero[ni][nj]=tablero[fi][fj]; tablero[fi][fj]=TIPO.VACIO; movidoEsteTurno[ni][nj]=true;
+    } else moverAleatorio(fi,fj);
+}
+
+function esPersonaje(t){return t===TIPO.ALIADO||t===TIPO.ENEMIGO}
+function esObstaculo(t){return t===TIPO.OBSTACULO_X||t===TIPO.OBSTACULO_O||t===TIPO.OBSTACULO_Z}
+function dentroDelTablero(i,j){return i>=0&&i<CONFIG.ALTO&&j>=0&&j<CONFIG.ANCHO}
+function mezclarArray(a){for(let k=a.length-1;k>0;k--){const r=Math.floor(Math.random()*(k+1));[a[k],a[r]]=[a[r],a[k]]}}
+function contarTipo(t){let n=0;for(let i=0;i<CONFIG.ALTO;i++)for(let j=0;j<CONFIG.ANCHO;j++)if(tablero[i][j]===t)n++;return n}
+
+function ajustarCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const s = Math.floor(rect.width);
+    canvas.width = s; canvas.height = s;
+    CONFIG.TAMANO_CELDA = s / CONFIG.ANCHO;
+}
+function dibujarTablero() {
+    const tam = CONFIG.TAMANO_CELDA;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for (let i=0;i<CONFIG.ALTO;i++) for (let j=0;j<CONFIG.ANCHO;j++) {
+        const x=j*tam,y=i*tam;
+        ctx.fillStyle=(i+j)%2===0?"#13131d":"#111119";
+        ctx.fillRect(x,y,tam,tam);
+        const tipo=tablero[i][j],c=tam/2;
+        if (tipo===TIPO.ALIADO) dibujarPersonaje(x,y,tam,"#f5c842","#ffe066","Ö");
+        else if (tipo===TIPO.ENEMIGO) dibujarPersonaje(x,y,tam,"#e84545","#ff7070","Ü");
+        else if (esObstaculo(tipo)) dibujarObstaculo(x,y,tam,tipo);
+    }
+}
+function dibujarPersonaje(x,y,tam,color,brillo,simbolo) {
+    const c=tam/2;
+    const g=ctx.createRadialGradient(x+c,y+c,tam*0.1,x+c,y+c,tam*0.6);
+    g.addColorStop(0,brillo);g.addColorStop(1,"transparent");
+    ctx.fillStyle=g;ctx.fillRect(x,y,tam,tam);
+    ctx.fillStyle=color;ctx.font=`bold ${tam*0.65}px 'JetBrains Mono',monospace`;
+    ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(simbolo,x+c,y+c+1);
+}
+function dibujarObstaculo(x,y,tam,tipo) {
+    const c=tam/2;ctx.fillStyle="#2a2a3a";
+    ctx.font=`${tam*0.5}px 'JetBrains Mono',monospace`;
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(tipo===TIPO.OBSTACULO_X?"✕":tipo===TIPO.OBSTACULO_O?"◯":"▣",x+c,y+c+1);
+}
+
+function actualizarContadores() {
+    elAliados.textContent=contarTipo(TIPO.ALIADO);
+    elEnemigos.textContent=contarTipo(TIPO.ENEMIGO);
+    elTurno.textContent=turnoClasico;
+}
+function comprobarFinDelJuego() {
+    const a=contarTipo(TIPO.ALIADO),e=contarTipo(TIPO.ENEMIGO);
+    if(a===0&&e===0){detenerJuego();mostrarMensaje("🤝 ¡Empate!","derrota")}
+    else if(a===0){detenerJuego();mostrarMensaje("💀 ¡Enemigos ganan!","derrota")}
+    else if(e===0){detenerJuego();mostrarMensaje("🏆 ¡Aliados ganan!","victoria")}
+}
+function mostrarMensaje(t,c){mensajeFinal.textContent=t;mensajeFinal.className=c}
+function ocultarMensaje(){mensajeFinal.className="oculto"}
+function iniciarJuego(){if(juegoActivo)return;juegoActivo=true;btnIniciar.disabled=true;btnPausar.disabled=false;intervaloId=setInterval(ejecutarTurno,velocidad)}
+function pausarJuego(){if(!juegoActivo)return;juegoActivo=false;clearInterval(intervaloId);intervaloId=null;btnIniciar.disabled=false;btnPausar.disabled=true}
+function detenerJuego(){juegoActivo=false;clearInterval(intervaloId);intervaloId=null;btnIniciar.disabled=true;btnPausar.disabled=true}
+function reiniciarJuego(){detenerJuego();turnoClasico=0;ocultarMensaje();crearTablero();ajustarCanvas();dibujarTablero();actualizarContadores();btnIniciar.disabled=false}
+
+btnIniciar.addEventListener("click",iniciarJuego);
+btnPausar.addEventListener("click",pausarJuego);
+btnReiniciar.addEventListener("click",reiniciarJuego);
+rangoVelocidad.addEventListener("input",()=>{velocidad=parseInt(rangoVelocidad.value);textoVelocidad.textContent=velocidad+"ms";if(juegoActivo){clearInterval(intervaloId);intervaloId=setInterval(ejecutarTurno,velocidad)}});
+window.addEventListener("resize",()=>{if(document.getElementById("pantalla-juego").classList.contains("activa")){ajustarCanvas();dibujarTablero()}});
+
+
+// ══════════════════════════════════════════════════════════
+// TESTS — ejecutar desde consola con: Tests.ejecutar()
+// ══════════════════════════════════════════════════════════
+const Tests = (() => {
+    let pasados = 0, fallados = 0;
+
+    function assert(condicion, mensaje) {
+        if (condicion) {
+            console.log(`  ✅ ${mensaje}`);
+            pasados++;
+        } else {
+            console.error(`  ❌ ${mensaje}`);
+            fallados++;
+        }
+    }
+
+    function crearJefeTest() {
+        return {
+            hp: 2000, hpMax: 2000, atk: 30,
+            efectos: { sangrado: 0, ruptura: 0, choque: 0, marchitamiento: 0, fragilidad: 0, marca: false, floracion: 0 },
+            stunned: false, ultimoAplicadorFloracionATK: 0,
+        };
+    }
+
+    function testSangrado() {
+        console.log("🩸 Test Sangrado:");
+        let j = crearJefeTest();
+        j.efectos.sangrado = 10;
+        const r = Efectos.aplicarSangradoFinTurno(j);
+        assert(r.dano === 10, `Daño = 10 (recibido: ${r.dano})`);
+        assert(r.nuevasAcum === 5, `Acumulaciones 10→5 (recibido: ${r.nuevasAcum})`);
+
+        j.efectos.sangrado = 7;
+        const r2 = Efectos.aplicarSangradoFinTurno(j);
+        assert(r2.nuevasAcum === 4, `Acumulaciones 7→4 ceil(3.5) (recibido: ${r2.nuevasAcum})`);
+
+        j.efectos.sangrado = 1;
+        const r3 = Efectos.aplicarSangradoFinTurno(j);
+        assert(r3.nuevasAcum === 1, `Acumulaciones 1→1 ceil(0.5) (recibido: ${r3.nuevasAcum})`);
+
+        j.efectos.sangrado = 0;
+        const r4 = Efectos.aplicarSangradoFinTurno(j);
+        assert(r4.dano === 0, `Sin acumulaciones = 0 daño`);
+    }
+
+    function testRuptura() {
+        console.log("💥 Test Ruptura:");
+        let j = crearJefeTest();
+        j.efectos.ruptura = 10;
+        const r = Efectos.aplicarRupturaAlGolpe(j);
+        assert(r.danoExtra === 10, `Daño extra = 10 (recibido: ${r.danoExtra})`);
+        assert(r.nuevasAcum === 9, `Acum 10→9 (10 - ceil(1)) (recibido: ${r.nuevasAcum})`);
+
+        j.efectos.ruptura = 3;
+        const r2 = Efectos.aplicarRupturaAlGolpe(j);
+        assert(r2.nuevasAcum === 2, `Acum 3→2 (3 - ceil(0.3)=1) (recibido: ${r2.nuevasAcum})`);
+    }
+
+    function testChoque() {
+        console.log("⚡ Test Choque:");
+        let j = crearJefeTest();
+        j.efectos.choque = 29;
+        let r = Efectos.comprobarChoque(j);
+        assert(!r.stunned, "29 acum = no stun");
+
+        j.efectos.choque = 30;
+        r = Efectos.comprobarChoque(j);
+        assert(r.stunned, "30 acum = stun");
+        assert(r.nuevasAcum === 0, "Reset a 0 tras stun");
+
+        j.efectos.choque = 12;
+        const n = Efectos.reducirChoquePorDanoAliado(j);
+        assert(n === 7, `12 - 5 = 7 (recibido: ${n})`);
+
+        j.efectos.choque = 3;
+        const n2 = Efectos.reducirChoquePorDanoAliado(j);
+        assert(n2 === 0, `3 - 5 = 0 (mín 0) (recibido: ${n2})`);
+    }
+
+    function testMarchitamiento() {
+        console.log("🍂 Test Marchitamiento:");
+        const red20 = Efectos.calcularReduccionMarchitamiento(20);
+        const esperado = (0.1 * 20) / 100; // 0.02
+        assert(Math.abs(red20 - esperado) < 0.0001, `20 acum → ${(esperado*100).toFixed(2)}% reducción (recibido: ${(red20*100).toFixed(2)}%)`);
+
+        const nueva = Efectos.reducirMarchitamientoFinTurno(5);
+        assert(nueva === 3, `5 - 2 = 3 (recibido: ${nueva})`);
+
+        const nueva2 = Efectos.reducirMarchitamientoFinTurno(1);
+        assert(nueva2 === 0, `1 - 2 = 0 mín (recibido: ${nueva2})`);
+    }
+
+    function testFragilidad() {
+        console.log("🔻 Test Fragilidad:");
+        const b10 = Efectos.calcularBonusFragilidad(10);
+        assert(Math.abs(b10 - 0.01) < 0.0001, `10 acum → 1% extra (recibido: ${(b10*100).toFixed(2)}%)`);
+
+        const bMax = Efectos.calcularBonusFragilidad(100);
+        assert(Math.abs(bMax - 0.05) < 0.0001, `100 acum → máx 5% (recibido: ${(bMax*100).toFixed(2)}%)`);
+
+        const nueva = Efectos.reducirFragilidadFinTurno(3);
+        assert(nueva === 1, `3 - 2 = 1 (recibido: ${nueva})`);
+    }
+
+    function testMarca() {
+        console.log("🎯 Test Marca:");
+        assert(Efectos.calcularBonusMarca(true) === 0.15, "Marca activa → 15% bonus");
+        assert(Efectos.calcularBonusMarca(false) === 0, "Marca inactiva → 0% bonus");
+    }
+
+    function testFloracion() {
+        console.log("🌸 Test Floración:");
+        let j = crearJefeTest();
+        j.efectos.floracion = 19;
+        let r = Efectos.comprobarFloracion(j);
+        assert(!r.explota, "19 acum = no explota");
+
+        j.efectos.floracion = 20;
+        j.ultimoAplicadorFloracionATK = 40;
+        r = Efectos.comprobarFloracion(j);
+        assert(r.explota, "20 acum = explota");
+        const danoEsperado = Math.ceil(20 * 0.1 * 40); // 80
+        assert(r.dano === danoEsperado, `Daño = ${danoEsperado} (20 * 10% de ATK 40) (recibido: ${r.dano})`);
+        assert(r.nuevasAcum === 0, "Reset a 0 tras explosión");
+    }
+
+    function ejecutar() {
+        pasados = 0; fallados = 0;
+        console.log("═══════════════════════════════════════");
+        console.log("  TESTS — Lotus of the Damned: Efectos");
+        console.log("═══════════════════════════════════════");
+        testSangrado();
+        testRuptura();
+        testChoque();
+        testMarchitamiento();
+        testFragilidad();
+        testMarca();
+        testFloracion();
+        console.log("═══════════════════════════════════════");
+        console.log(`  Resultado: ${pasados} pasados, ${fallados} fallados`);
+        console.log("═══════════════════════════════════════");
+        return { pasados, fallados };
+    }
+
+    return { ejecutar };
+})();
+
+
+// ══════════════════════════════════════════════════════════
+// ARRANQUE
+// ══════════════════════════════════════════════════════════
+Menu.init();
+
+// Ejecutar tests automáticamente en desarrollo
+Tests.ejecutar();
+</script>
+</body></html>
