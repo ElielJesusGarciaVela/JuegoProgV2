@@ -2,13 +2,13 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Game Bar</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="tema-default">
 
-    <!-- ═══════ PANTALLA 1: Título ═══════ -->
+    <!-- P1: Título -->
     <div id="pantalla-titulo" class="pantalla activa">
         <div class="titulo-contenido">
             <div class="titulo-icono">🎮</div>
@@ -17,7 +17,7 @@
         <p class="titulo-click">Haz click para iniciar</p>
     </div>
 
-    <!-- ═══════ PANTALLA 2: Selección de modo ═══════ -->
+    <!-- P2: Modos -->
     <div id="pantalla-modos" class="pantalla">
         <div class="modos-contenido">
             <h2 class="modos-titulo">Selecciona modo de juego</h2>
@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <!-- ═══════ PANTALLA 3: Juego Clásico ═══════ -->
+    <!-- P3: Clásico -->
     <div id="pantalla-juego" class="pantalla">
         <div id="app">
             <header id="cabecera"><h1>⚔️ Campo de Batalla</h1><p class="subtitulo">Aliados vs Enemigos</p></header>
@@ -55,7 +55,7 @@
         </div>
     </div>
 
-    <!-- ═══════ PANTALLA 4: Selección de personajes (Lotus) ═══════ -->
+    <!-- P4: Selección personajes -->
     <div id="pantalla-seleccion" class="pantalla">
         <div class="seleccion-contenido">
             <h2 class="seleccion-titulo">Elige tu equipo</h2>
@@ -73,41 +73,81 @@
         </div>
     </div>
 
-    <!-- ═══════ PANTALLA 5: Combate por turnos ═══════ -->
+    <!-- P5: Combate -->
     <div id="pantalla-combate" class="pantalla">
-        <div class="batalla-escena" id="batalla-escena">
-            <!-- Fondo de batalla (via CSS background-image) -->
-
-            <!-- Barra de orden de turnos (esquina sup. derecha) -->
-            <div class="turno-barra" id="turno-barra">
-                <div class="turno-contador" id="turno-contador">Turno 0</div>
-                <div class="turno-lista" id="turno-lista"></div>
-            </div>
-
-            <!-- Zona enemigo (arriba derecha del campo) -->
-            <div class="zona-enemigo" id="zona-enemigo">
-                <div class="enemigo-placeholder">Enemigo (próximamente)</div>
-            </div>
-
-            <!-- Zona personaje activo (abajo izquierda del campo) -->
-            <div class="zona-aliado" id="zona-aliado">
-                <canvas id="sprite-canvas"></canvas>
-            </div>
-
-            <!-- Panel de acciones (abajo derecha) -->
-            <div class="panel-acciones" id="panel-acciones">
-                <div class="panel-acciones-info">
-                    <span class="pa-nombre" id="pa-nombre">—</span>
-                    <span class="pa-hp" id="pa-hp">HP: — / —</span>
+        <div class="batalla-viewport" id="batalla-viewport">
+            <div class="batalla-campo" id="batalla-campo">
+                <!--
+                    POSICIÓN DE SPRITES — editar aquí (index.html, líneas 82-97)
+                    Según CombatEntityPlacement.png:
+                    - Aliado 0 (trasero-izq): left:5%, top:62%
+                    - Aliado 1 (centro):      left:28%, top:58%
+                    - Aliado 2 (delantero):   left:15%, top:74%
+                    - Enemigo (derecha):       left:72%, top:58%
+                -->
+                <div class="campo-actor aliado-slot" id="aliado-0" style="left:5%;top:95%">
+                    <canvas class="actor-canvas"></canvas>
+                    <div class="hp-bar-wrapper oculto"><img src="Assets/HPBar.png" class="hp-bar-bg"><div class="hp-bar-fill"></div><span class="hp-text">0/0</span></div>
                 </div>
-                <div class="panel-acciones-btns">
-                    <button id="btn-atacar" class="btn-accion">⚔️ Atacar</button>
-                    <button id="btn-defender" class="btn-accion">🛡️ Defender</button>
+                <div class="campo-actor aliado-slot" id="aliado-1" style="left:28%;top:90%">
+                    <canvas class="actor-canvas"></canvas>
+                    <div class="hp-bar-wrapper oculto"><img src="Assets/HPBar.png" class="hp-bar-bg"><div class="hp-bar-fill"></div><span class="hp-text">0/0</span></div>
+                </div>
+                <div class="campo-actor aliado-slot" id="aliado-2" style="left:15%;top:92%">
+                    <canvas class="actor-canvas"></canvas>
+                    <div class="hp-bar-wrapper oculto"><img src="Assets/HPBar.png" class="hp-bar-bg"><div class="hp-bar-fill"></div><span class="hp-text">0/0</span></div>
+                </div>
+                <div class="campo-actor enemigo-slot" id="enemigo-slot" style="left:72%;top:95%">
+                    <canvas class="actor-canvas"></canvas>
+                    <div class="hp-bar-wrapper oculto"><img src="Assets/HPBar.png" class="hp-bar-bg"><div class="hp-bar-fill"></div><span class="hp-text">0/0</span></div>
                 </div>
             </div>
+        </div>
 
-            <!-- Botón volver al menú -->
-            <button id="btn-combate-menu" class="btn-flotante-menu">🏠</button>
+        <!-- HUD: Barra turnos (sup izq) -->
+        <div class="hud-turnbar" id="hud-turnbar">
+            <div class="turnbar-counter"><img src="Assets/TurnCounter.png" class="turnbar-counter-bg"><span class="turnbar-counter-text" id="turnbar-counter-text">Turno 0</span></div>
+            <div class="turnbar-body"><img src="Assets/ActionBar.png" class="turnbar-body-bg"><div class="turnbar-icons" id="turnbar-icons"></div></div>
+        </div>
+
+        <!-- HUD: Pausa (sup der) -->
+        <button class="hud-pause" id="hud-pause"><img src="Assets/PauseButton.png"></button>
+
+        <!-- ActionMenu (aparece EN el campo junto al personaje activo, dentro del zoom) -->
+        <div class="action-menu oculto" id="action-menu">
+            <div class="action-menu-inner">
+                <img src="Assets/ActionMenu.png" class="action-menu-bg">
+                <span class="action-menu-name" id="action-menu-name">Nombre</span>
+                <div class="action-menu-btns">
+                    <button class="am-btn" id="am-atacar"><img src="Assets/BotonAtacar.png"></button>
+                    <button class="am-btn" id="am-defender"><img src="Assets/BotonDefender.png"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AttackMenu (reemplaza ActionMenu al pulsar Atacar) -->
+        <div class="attack-menu oculto" id="attack-menu">
+            <div class="attack-menu-inner">
+                <img src="Assets/AttackMenu.png" class="attack-menu-bg">
+                <button class="atk-volver" id="atk-volver"><img src="Assets/BotonVolver.png"></button>
+                <div class="atk-grid" id="atk-grid">
+                    <!-- Botones de ataque generados por JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Menú pausa -->
+        <div class="pause-overlay oculto" id="pause-overlay">
+            <div class="pause-menu">
+                <img src="Assets/Menu.png" class="pause-menu-bg">
+                <div class="pause-menu-content">
+                    <label class="vol-label">🔊 Volumen<input type="range" id="vol-slider" min="0" max="100" value="50" class="vol-slider"></label>
+                </div>
+                <div class="pause-menu-btns">
+                    <button class="pause-btn" id="btn-continue"><img src="Assets/ContinueButton.png"></button>
+                    <button class="pause-btn" id="btn-exit"><img src="Assets/ExitButton.png"></button>
+                </div>
+            </div>
         </div>
     </div>
 
