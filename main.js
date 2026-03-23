@@ -14,15 +14,6 @@ const PERSONAJES = [
     { id:"meilin", nombre:"Meilin", titulo:"Sacerdotisa del Trueno",    efecto:"choque",   atk:40, hp:130,
       icon:"Sprites/Meilin/MeilinIcon.png",
       idle:{ src:"Sprites/Meilin/MeilinIdle.png", cols:6, rows:6, total:36, fw:336, fh:706 } },
-    { id:"katsuro",nombre:"Katsuro",titulo:"Guardia del Dragón",       efecto:"sangrado", atk:42, hp:140, icon:"Sprites/PlaceHolders/CharacterIconPlaceholder.png", idle:null },
-    { id:"hana",   nombre:"Hana",   titulo:"Flor Errante",             efecto:"marchitamiento", atk:35, hp:110, icon:"Sprites/PlaceHolders/CharacterIconPlaceholder.png", idle:null },
-    { id:"jiro",   nombre:"Jiro",   titulo:"Espadachín del Crepúsculo",efecto:"ruptura",  atk:55, hp:90,  icon:"Sprites/PlaceHolders/CharacterIconPlaceholder.png", idle:null },
-    { id:"lian",   nombre:"Lian",   titulo:"Monje del Viento",         efecto:"fragilidad",atk:38, hp:125, icon:"Sprites/PlaceHolders/CharacterIconPlaceholder.png", idle:null },
-    { id:"sora",   nombre:"Sora",   titulo:"Bailarina de Loto",        efecto:"fragilidad",atk:36, hp:115, icon:"Sprites/PlaceHolders/CharacterIconPlaceholder.png", idle:null },
-    { id:"daichi", nombre:"Daichi", titulo:"Martillo de Jade",         efecto:"choque",   atk:60, hp:150, icon:"Sprites/PlaceHolders/CharacterIconPlaceholder.png", idle:null },
-    { id:"yume",   nombre:"Yume",   titulo:"Oráculo de la Niebla",     efecto:"marca",    atk:44, hp:105, icon:"Sprites/PlaceHolders/CharacterIconPlaceholder.png", idle:null },
-    { id:"takeda", nombre:"Takeda", titulo:"General Caído",            efecto:"sangrado", atk:48, hp:135, icon:"Sprites/PlaceHolders/CharacterIconPlaceholder.png", idle:null },
-    { id:"lotus",  nombre:"Lotus",  titulo:"Portador de Pétalos",      efecto:"floracion", atk:40, hp:120, icon:"Sprites/PlaceHolders/CharacterIconPlaceholder.png", idle:null },
 ];
 const SLIME = { id:"slime", nombre:"Slime", atk:18, hp:300, icon:"Enemies/Domain1/Slime/SlimeIcon.png",
     idle:{ src:"Enemies/Domain1/Slime/SlimeIdle.png", cols:6, rows:6, total:36, fw:544, fh:514 }, pingPong:true };
@@ -147,7 +138,7 @@ const TurnSystem = (() => {
     function getActores(){return actores;}
     function getEnemigo(){return actores.find(a=>a.tipo==='enemigo');}
     function getAliados(){return actores.filter(a=>a.tipo==='aliado');}
-    function danar(idx,cant){const a=actores[idx];if(!a||!a.vivo)return 0;const r=Math.min(a.hpActual,Math.max(0,Math.round(cant)));a.hpActual-=r;return r;}
+    function danar(idx,cant){const a=actores[idx];if(!a||!a.vivo)return 0;const r=Math.min(a.hpActual,Math.max(0,Math.round(cant)));a.hpActual-=r;if(a.hpActual<=0){a.hpActual=0;a.vivo=false;}return r;}
     return {iniciar,actual,avanzar,getRonda,getOrden,getPos,getActores,getEnemigo,getAliados,danar};
 })();
 
@@ -213,7 +204,10 @@ const BattleScene = (() => {
 
     function iniciarTurno(){
         if(!activo||pausado) return;
-        const actor=TurnSystem.actual(); if(!actor) return;
+        const actor=TurnSystem.actual();
+        if(!actor) return;
+        // Skip dead actors (shouldn't happen with nuevaRonda filter, but safety)
+        if(!actor.vivo){ avanzarTurno(); return; }
         document.querySelectorAll('.campo-actor').forEach(el=>el.classList.remove('activo-turno'));
         const slot=document.getElementById(actor.slotId);
         if(slot) slot.classList.add('activo-turno');
@@ -261,6 +255,8 @@ const BattleScene = (() => {
             TurnSystem.danar(idx, actor.atk);
             actualizarHP(enemigo);
         }
+        // Comprobar victoria
+        if(checkFinCombate()) return;
         setTimeout(()=>avanzarTurno(),600);
     }
 
@@ -282,7 +278,55 @@ const BattleScene = (() => {
             TurnSystem.danar(idx, enemigo.atk);
             actualizarHP(obj);
         }
+        // Comprobar derrota
+        if(checkFinCombate()) return;
         setTimeout(()=>avanzarTurno(),600);
+    }
+
+    // Comprueba si el combate ha terminado
+    function checkFinCombate(){
+        const enemigo=TurnSystem.getEnemigo();
+        const aliadosVivos=TurnSystem.getAliados().filter(a=>a.vivo);
+        if(enemigo && !enemigo.vivo){
+            // Victoria
+            setTimeout(()=>mostrarResultado('Assets/VictoryScreen.png'),800);
+            return true;
+        }
+        if(aliadosVivos.length===0){
+            // Derrota
+            setTimeout(()=>mostrarResultado('Assets/DefeatScreen.png'),800);
+            return true;
+        }
+        return false;
+    }
+
+    // Muestra pantalla de resultado con fade, click vuelve al menú
+    function mostrarResultado(imgSrc){
+        activo=false;
+        AudioMgr.stop();
+        // Ocultar menús de acción
+        document.getElementById("action-menu").classList.add("oculto");
+        document.getElementById("attack-menu").classList.add("oculto");
+        // Crear overlay de resultado
+        const overlay=document.createElement("div");
+        overlay.id="resultado-overlay";
+        overlay.style.cssText="position:absolute;inset:0;z-index:200;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .8s ease;";
+        const img=document.createElement("img");
+        img.src=imgSrc;
+        img.style.cssText="max-width:80%;max-height:80%;opacity:0;transition:opacity 1s ease;";
+        overlay.appendChild(img);
+        document.getElementById("pantalla-combate").appendChild(overlay);
+        // Fade in
+        requestAnimationFrame(()=>{
+            overlay.style.background="rgba(0,0,0,0.7)";
+            img.style.opacity="1";
+        });
+        // Click para volver al menú
+        overlay.addEventListener("click",()=>{
+            overlay.remove();
+            BattleScene.detener();
+            Menu.volverAModos();
+        });
     }
 
     function avanzarTurno(){
@@ -302,6 +346,7 @@ const BattleScene = (() => {
         document.getElementById("pause-overlay").classList.add("oculto");
         document.getElementById("action-menu").classList.add("oculto");
         document.getElementById("attack-menu").classList.add("oculto");
+        const res=document.getElementById("resultado-overlay"); if(res) res.remove();
         document.querySelectorAll('.campo-actor').forEach(el=>el.classList.remove('activo-turno'));
         document.querySelectorAll('.hp-bar-wrapper').forEach(el=>el.classList.add('oculto'));
     }
@@ -383,7 +428,7 @@ const Menu = (() => {
             if(document.getElementById("pantalla-combate").classList.contains("activa")&&e.key==="Escape")BattleScene.pausar();
         });
     }
-    return {init,mostrarPantalla};
+    return {init,mostrarPantalla,volverAModos};
 })();
 
 // ══════════════════════════════════════════════════════════
